@@ -1,0 +1,217 @@
+===== Simulator configuration =====
+BLOCKSIZE:             16
+L1_SIZE:               1024
+L1_ASSOC:              1
+L2_SIZE:               8192
+L2_ASSOC:              4
+REPLACEMENT POLICY:    LRU
+INCLUSION PROPERTY:    inclusive
+trace_file:            compress_trace.txt
+===== L1 contents =====
+Set     0:	1039b0 D	
+Set     1:	1039b7 D	
+Set     2:	10389b  	
+Set     3:	103897  	
+Set     4:	10385a D	
+Set     5:	10002c  	
+Set     6:	103860  	
+Set     7:	1039ab D	
+Set     8:	100022  	
+Set     9:	10385f D	
+Set     10:	103997 D	
+Set     11:	103838 D	
+Set     12:	103847  	
+Set     13:	10003c  	
+Set     14:	103868  	
+Set     15:	103834  	
+Set     16:	10385a D	
+Set     17:	10003e  	
+Set     18:	100041  	
+Set     19:	100026  	
+Set     20:	10003e  	
+Set     21:	100039  	
+Set     22:	103969 D	
+Set     23:	10386a D	
+Set     24:	100043  	
+Set     25:	10387e D	
+Set     26:	10388a  	
+Set     27:	103891 D	
+Set     28:	10003b  	
+Set     29:	10388d  	
+Set     30:	103995 D	
+Set     31:	10387e D	
+Set     32:	103895  	
+Set     33:	103992 D	
+Set     34:	1039a9 D	
+Set     35:	1039b2 D	
+Set     36:	103969 D	
+Set     37:	10002c  	
+Set     38:	10387d D	
+Set     39:	103876  	
+Set     40:	100040  	
+Set     41:	103898  	
+Set     42:	10003e  	
+Set     43:	103847  	
+Set     44:	100027  	
+Set     45:	103838 D	
+Set     46:	1039a8 D	
+Set     47:	10002e  	
+Set     48:	103849  	
+Set     49:	103890  	
+Set     50:	103847  	
+Set     51:	103855 D	
+Set     52:	103858 D	
+Set     53:	103831 D	
+Set     54:	10002f  	
+Set     55:	100037  	
+Set     56:	103888  	
+Set     57:	103995 D	
+Set     58:	1038a6 D	
+Set     59:	10001e  	
+Set     60:	103996 D	
+Set     61:	10002a  	
+Set     62:	10398a D	
+Set     63:	103869 D	
+===== L2 contents =====
+Set     0:	81c2b D	80016  	80012  	81cd8  	
+Set     1:	81ccc D	81c4a D	81c24 D	81c46  	
+Set     2:	81c25  	81c45  	80011  	81c4e D	
+Set     3:	81c1e  	81c3c  	81c42 D	81cbb D	
+Set     4:	8001f  	81c44 D	81c30  	81c2d  	
+Set     5:	81c2b D	81c49  	80016  	81c51 D	
+Set     6:	81c49  	81cd0 D	81c30  	80021  	
+Set     7:	81c54  	81c48 D	81cc8 D	81c53  	
+Set     8:	8001a  	81cd8 D	81cd5 D	80011  	
+Set     9:	81c18  	81c30  	81c35 D	8001d  	
+Set     10:	81c42 D	81cca D	81c51 D	81c55 D	
+Set     11:	81cc6 D	81c1c  	81cc1 D	81c17  	
+Set     12:	81c50  	81c35 D	81cba D	81c40  	
+Set     13:	81c49 D	81c2b  	8001e  	80017  	
+Set     14:	81c24 D	81c3a  	81c3b D	81c34  	
+Set     15:	81c53 D	80015  	81c32  	81c1a  	
+Set     16:	81c3c D	81c20 D	81c2d  	80017  	
+Set     17:	81c54  	81c2b D	80015  	8001f  	
+Set     18:	81c17  	8001a  	81c47 D	81c21  	
+Set     19:	80013  	81c37 D	81c1b D	81c20  	
+Set     20:	80010  	81c4a  	81c3f  	8001f  	
+Set     21:	81cb4 D	81c47 D	81c43  	81c4a D	
+Set     22:	81cca D	81c29  	8001a  	81c33  	
+Set     23:	81c4d D	81c2a D	81c39  	81c35  	
+Set     24:	81c40 D	81c3f D	81cbe D	8001b  	
+Set     25:	81c3e  	81cd2 D	80010  	81c3f  	
+Set     26:	81c37 D	80016  	81c45  	81cda D	
+Set     27:	81c53 D	80020  	81cc7 D	81c3b D	
+Set     28:	81c54  	81c51  	81c24  	81cd5 D	
+Set     29:	81c52  	81c25 D	81c24  	81cc4 D	
+Set     30:	81c2c  	81c22  	81c4d  	81c52 D	
+Set     31:	80012  	81c37  	81c3f  	80013  	
+Set     32:	81c3a D	80010  	81cbe D	81c42  	
+Set     33:	81c45 D	81cc9  	81c1e  	81cbb D	
+Set     34:	81c40 D	80017  	81c55  	81ccb D	
+Set     35:	8001a  	81c3c D	81c4e  	81cd9  	
+Set     36:	81c4b D	80019  	80012  	81c47 D	
+Set     37:	80017  	81cc0 D	80016  	81c55 D	
+Set     38:	81c31 D	81c38 D	80014  	81c47  	
+Set     39:	81c4f D	81c3b  	81cd4 D	81c55  	
+Set     40:	81c45  	81c38 D	80020  	8001f  	
+Set     41:	81c44  	81cda D	81c4c  	81c36 D	
+Set     42:	81c51  	80010  	8001f  	81c27  	
+Set     43:	81cdb D	81c42  	81c2a  	81c3a  	
+Set     44:	81c19  	81cd2 D	81c55  	80016  	
+Set     45:	81cb8 D	81c1c  	81c47  	81cc4 D	
+Set     46:	81c28  	8001b  	81cd4  	81c47  	
+Set     47:	81c54 D	81cbc D	81c53  	80017  	
+Set     48:	81c21  	81c32  	81c1c  	81c44 D	
+Set     49:	8001a  	81c48  	80021  	80020  	
+Set     50:	81c24  	81c26 D	8001a  	80019  	
+Set     51:	81cba D	80014  	81cb4 D	81c4d  	
+Set     52:	80020  	81c2c  	81cbb D	80016  	
+Set     53:	8001d  	80010  	81cd4 D	81c31 D	
+Set     54:	81c40  	80015  	81c29  	81cc0 D	
+Set     55:	81c34  	80021  	8001a  	81cd5 D	
+Set     56:	81c1b  	81c44  	8001e  	81c24 D	
+Set     57:	81c1a  	80010  	81c38 D	8001e  	
+Set     58:	8001b  	80019  	81c53  	80015  	
+Set     59:	81c26  	8000f  	81c44 D	81c35  	
+Set     60:	81cd5 D	81ccb  	80017  	81c4d D	
+Set     61:	80015  	81c17  	81c2e D	80021  	
+Set     62:	81c55  	80015  	81c3e  	81cc5 D	
+Set     63:	81cbd D	81c31  	81c4c  	81c1c  	
+Set     64:	81c2b D	81c2f  	81c46  	80020  	
+Set     65:	8001b  	81ccb D	81cdb  	81c4d D	
+Set     66:	81c4d  	81c23  	81c50  	81c4f D	
+Set     67:	81c32  	81c25  	81c4b  	81c1d D	
+Set     68:	81c3d  	81c3f  	81c30  	81c31 D	
+Set     69:	81c25  	81c48 D	80020  	81c3b  	
+Set     70:	81ccc D	81c4b D	8001e  	81cd1 D	
+Set     71:	81c19  	81c35 D	81cd5  	81c30 D	
+Set     72:	81c39  	81c23  	80013  	81c30  	
+Set     73:	81c22 D	81c2f  	81c45  	81c44 D	
+Set     74:	80014  	81ccb  	81c47 D	81cd4 D	
+Set     75:	81c34 D	81cb6 D	81c43 D	81c35 D	
+Set     76:	81c2a  	80015  	81c23  	81c16 D	
+Set     77:	81c4c D	81c26  	81ccb D	80018  	
+Set     78:	80012  	81c55 D	8001a  	81c3c  	
+Set     79:	81c4c  	81cb3 D	81ccf D	81c4f D	
+Set     80:	80011  	80014  	81c41 D	80010  	
+Set     81:	81c35  	80012  	81c3e  	81cd0 D	
+Set     82:	81c3e  	80020  	81c48  	81c4a  	
+Set     83:	81c33  	81c3a  	81c17 D	81c3c D	
+Set     84:	81cc6 D	81c51  	81c46 D	81c23 D	
+Set     85:	81c41  	81c1e  	8001c  	81c50  	
+Set     86:	81c1d D	81cb4  	81c21 D	81c19  	
+Set     87:	80010  	81c4e  	80011  	81cd1 D	
+Set     88:	81cd4 D	80014  	80021  	81c54  	
+Set     89:	80013  	80019  	81cc9 D	81c19  	
+Set     90:	81cbd D	81c49  	81cce D	81c4a D	
+Set     91:	81c24  	81c4d  	81c48  	80020  	
+Set     92:	81c1d D	81c4d  	81cbd D	8001d  	
+Set     93:	80021  	80018  	81cc0 D	81c46  	
+Set     94:	81c37  	81cca  	8001a  	81c3c D	
+Set     95:	81c43 D	81c54 D	81c3a  	81c17 D	
+Set     96:	81c45  	81c4a  	81cda D	81cd6 D	
+Set     97:	81c4e  	80017  	81cb7 D	80018  	
+Set     98:	80012  	81c3d  	81cd4  	81cd3 D	
+Set     99:	81cce D	81c36 D	81c4c D	81c52 D	
+Set     100:	81cb4  	81cda D	81c4a D	80016  	
+Set     101:	81c43  	81c3e  	81cd5 D	81c54 D	
+Set     102:	81c31 D	81c39 D	81c3e  	81c1c  	
+Set     103:	81c4e  	81c47  	81c4a  	8001d  	
+Set     104:	8001c  	81c2b  	80010  	81c41  	
+Set     105:	81c54 D	81c34  	81cc1 D	80011  	
+Set     106:	81c55  	8001c  	81c3e D	80013  	
+Set     107:	81c23  	81cb4 D	81cc2 D	81c36  	
+Set     108:	81c4f  	81c26  	80013  	81c4a D	
+Set     109:	8001b  	81c4e  	80013  	81cb4 D	
+Set     110:	8000f  	81c32  	81cc7 D	81c52 D	
+Set     111:	81c24  	81cd1 D	8001e  	81c29  	
+Set     112:	80012  	81cd0 D	81c31  	81c24  	
+Set     113:	81c28  	81cd2 D	81cb2 D	81c46 D	
+Set     114:	81c1a  	81c23  	81c3c  	81cdb D	
+Set     115:	81c2a  	81c25 D	81c43 D	80016  	
+Set     116:	81c3a  	81cc7 D	81c47 D	81c3d  	
+Set     117:	81c45  	81cb3 D	80012  	81c18  	
+Set     118:	81cb4 D	80017  	81c2f D	81c3d  	
+Set     119:	8001b  	81cd1 D	8001d  	81ccc D	
+Set     120:	81c42 D	81cd2 D	81c41 D	81c4e  	
+Set     121:	81c1e  	81c51  	81cca  	81cb6 D	
+Set     122:	81c19 D	81c2a  	80020  	80015  	
+Set     123:	80013  	8001f  	81c30 D	81c54 D	
+Set     124:	81cb1 D	81c4e D	80018  	81c1b D	
+Set     125:	81c43 D	81c46 D	8001d  	81c4a  	
+Set     126:	81cc1 D	80012  	81cd9 D	81c29 D	
+Set     127:	80018  	81c17 D	81c15  	81c34  	
+===== Simulation results (raw) =====
+a. number of L1 reads:        51960
+b. number of L1 read misses:  51727
+c. number of L1 writes:       48040
+d. number of L1 write misses: 47908
+e. L1 miss rate:              0.996350
+f. number of L1 writebacks:   47942
+g. number of L2 reads:        99635
+h. number of L2 read misses:  97026
+i. number of L2 writes:       47942
+j. number of L2 write misses: 0
+k. L2 miss rate:              0.973814
+l. number of L2 writebacks:   47119
+m. total memory traffic:      144145
