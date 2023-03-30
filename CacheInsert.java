@@ -407,26 +407,24 @@ public class CacheInsert {
 			}
 			z1++;
 		}
+
 		int max = -1;
-		int i4=0;
-		/* 
-		 * 
-		 */
-		while (i4 < arr.length){
-			max = Math.max(arr[i4], max);
-			i4++;
+		for (int i = 0; i < arr.length; i++) 
+		{
+			max = Math.max(arr[i], max);
 		}
+
 		int leastUsed = -1;
-		int i5=0;
-		while(i5<gvopt_li.size()){
-			if(arr[i5] == max && leastUsed < gvopt_li.get(i5).block_Cache_AccessCounter_OPT())
+		for (int i = 0; i < gvopt_li.size(); i++) 
+		{
+			if(arr[i] == max && leastUsed < gvopt_li.get(i).block_Cache_AccessCounter_OPT())
 			{
-				leastUsed = gvopt_li.get(i5).block_Cache_AccessCounter_OPT();
-				evopt_idx = i5;
+				leastUsed = gvopt_li.get(i).block_Cache_AccessCounter_OPT();
+				evopt_idx = i;
 				return evopt_idx;
 			}
-			i5++;
 		}
+
 		return evopt_idx;
 	}
 	//L2 replacement policy
