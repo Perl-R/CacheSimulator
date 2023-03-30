@@ -77,36 +77,6 @@ public class CacheInsert {
 			Memory_Collection = read_miss_L2 + write_Miss_L2 +write_backs_L2 + eviction_L1;
 		print_Cache();
 	}
-	//psudoLRU
-	void alloc(int arr[], int mid, int index, int lvl_val, int v)
-	{
-		if(lvl_val == 0)
-		{
-			arr[index] = v;
-			return;
-		}
-		else if(mid>index)
-		{
-			arr[mid] = 0;
-			alloc(arr, mid - lvl_val, index, lvl_val/2, v);
-		}
-		else
-		{
-			arr[mid] = 1;
-			alloc(arr, mid + lvl_val, index, lvl_val/2, v);
-		}
-	}
-	void plru_update(int[] arr, int index) {
-		int idx = index;
-		int v = 0;
-		if(index%2 != 0)
-		{
-			idx --;
-			v = 1;
-		}
-		int mid = (arr.length-1)/2;
-		alloc(arr, mid, idx, (mid+1)/2, v);
-	}
 	int blank_Flag_L1 = 0;
 	List<Integer> blank_Idx_L1 = new ArrayList<>();
 	int row_Idx = 0;
@@ -119,8 +89,6 @@ public class CacheInsert {
 		{
 			if(bc.block_cache_tag.equals(rL1_tag)) {
 				hit_Read_L1(rL1_tag, rL1_list, bc);
-				//psudolru
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(rL1_bits)], rL1_list.indexOf(bc));
 				return;
 			}
 		}
@@ -137,13 +105,11 @@ public class CacheInsert {
 			if(blank_Flag_L1 != 0)
 			{
 				rL1_list.add(blank_Idx_L1.get(0),new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false));
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(rL1_bits)], blank_Idx_L1.remove(0));
 				blank_Flag_L1--;
 			}
 			else
 			{
 				rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false));
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(rL1_bits)], rL1_list.size()-1);
 			}
 			if(obj_cache.newL2.size() != 0)
 			{
@@ -180,8 +146,6 @@ public class CacheInsert {
 			if(bc.block_cache_tag.equals(wL1_tag)) {
 				hit_Write_L1(wL1_tag, wL1_list, bc);
 				bc.set_block_cache_dirtyBit(true);
-				//psudolru
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(wL1_bits)], wL1_list.indexOf(bc));
 				return;
 			}
 		}
@@ -198,13 +162,11 @@ public class CacheInsert {
 			if(blank_Flag_L1 != 0)
 			{
 				wL1_list.add(blank_Idx_L1.get(0),new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true));
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(wL1_bits)], blank_Idx_L1.remove(0));
 				blank_Flag_L1--;
 			}
 			else
 			{
 				wL1_list.add(new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true));
-				plru_update(obj_cache.newplru_L1[getting_idx_L1(wL1_bits)], wL1_list.size()-1);
 			}
 			if(obj_cache.newL2.size() != 0)
 			{
@@ -248,8 +210,6 @@ public class CacheInsert {
 		{
 			if(bc.get_block_cache_Tag().equals(rL1_tag)) {
 				hit_Read_L2(rL1_tag, rL1_list, bc);
-				//psudolru
-				plru_update(obj_cache.newplru_L2[getting_idx_L2(rL1_bits)], rL1_list.indexOf(bc));
 				return;
 			}
 		}
@@ -265,8 +225,6 @@ public class CacheInsert {
 			}
 			rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L2 -1 , false));
 
-			//psudolru
-			plru_update(obj_cache.newplru_L2[getting_idx_L2(rL1_bits)], rL1_list.size()-1);
 		}
 		else //using replacement policy
 		{
@@ -298,8 +256,6 @@ public class CacheInsert {
 			if(bc.get_block_cache_Tag().equals(wL2_tag)) {
 				hit_Write_L2(wL2_tag, wL2_list, bc);
 				bc.set_block_cache_dirtyBit(true);
-				//psudo lru
-				plru_update(obj_cache.newplru_L2[getting_idx_L2(wL2_bits)], wL2_list.indexOf(bc));
 				return;
 			}
 		}
@@ -314,9 +270,6 @@ public class CacheInsert {
 				bc.set_block_Cache_AccessCounter_OPT(bc.block_Cache_AccessCounter_OPT()+1);
 			}
 			wL2_list.add(new Block_Cache(wL2_data, wL2_tag, obj_cache.set_L2 -1 , true));
-
-			//psudo lru
-			plru_update(obj_cache.newplru_L2[getting_idx_L2(wL2_bits)], wL2_list.size()-1);
 		}
 		else //applying replacement policy
 		{
@@ -374,8 +327,9 @@ public class CacheInsert {
 		int uCL1_idx = 0;
 		switch(obj_cache.replacementPolicy)
 		{
+			// TODO: This will become the case for FIFO
 			case 1:{
-				uCL1_idx = getting_eviction_idx_plru(obj_cache.newplru_L1[getting_idx_L1(SSMap.get(u_data))]);
+				// uCL1_idx = getting_eviction_idx_fifo() 
 				break;
 			}
 			case 2:{
@@ -469,9 +423,10 @@ public class CacheInsert {
 	//L2 replacement policy
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
 		int idx = 0;
+		// TODO: This will be the case for FIFO
 		if (obj_cache.replacementPolicy == 1)
 		{
-			idx = getting_eviction_idx_plru(obj_cache.newplru_L2[getting_idx_L2(SSMap.get(UCL2_data))]);
+				// uCL1_idx = getting_eviction_idx_fifo() 
 		}
 		else if (obj_cache.replacementPolicy == 2) {
 			idx = getting_eviction_idx_opt(UCL2_list);

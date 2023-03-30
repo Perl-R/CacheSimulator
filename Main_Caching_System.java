@@ -23,7 +23,9 @@ public class Main_Caching_System {
 		this.traceFile = cons_traceFile;
 		// evaluating l1's and l2's rows and sets and cache architecture structuring
 		func_MCS_Rows_Calc();
-		new_obj_cache = new Cache(MCS_Rows_L1, cons_MCS_Assoc_L1, MCS_Rows_L2, cons_MCS_Assoc_L2, cons_MCS_Size_Block, cons_MCS_Replacement_Policy, cons_MCS_Inclusion_Property, cons_MCS_Size_L1, cons_MCS_Size_L2, cons_MCS_Assoc_L1, cons_MCS_Assoc_L2, cons_traceFile);
+		new_obj_cache = new Cache(MCS_Rows_L1, cons_MCS_Assoc_L1, MCS_Rows_L2, cons_MCS_Assoc_L2, 
+                                cons_MCS_Size_Block, cons_MCS_Replacement_Policy, cons_MCS_Inclusion_Property, 
+                                cons_MCS_Size_L1, cons_MCS_Size_L2, cons_MCS_Assoc_L1, cons_MCS_Assoc_L2, cons_traceFile);
 		// getting arraylist and hashmap data
 		new_obj_data = new ArrayList<>();
 		new_obj_map = new HashMap<>();
