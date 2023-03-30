@@ -10,6 +10,7 @@ public class CacheInsert {
 	int reads_L2, read_miss_L2, writes_L2, write_Miss_L2, write_backs_L2, Memory_Collection;
 	int eviction_L1 = 0;
 	int global_Idx_Optimal = 0;
+
 	public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
 		this.obj_cache = cons_cache;
 		this.SSMap = cons_SSMap;
@@ -26,20 +27,24 @@ public class CacheInsert {
 		write_backs_L2 = 0;
 		insert_Cache_Data();
 	}
+
 	//Get index from L1 of the address
 	int getting_idx_L1(String str_idx_L1)
 	{
 		return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1+ obj_cache.idx_L1),2);
 	}
+
 	//Get index from L2 of the address
 	int getting_idx_L2(String str_idx_L2)
 	{
 		return Integer.parseInt(str_idx_L2.substring(obj_cache.tag_L2, obj_cache.tag_L2+ obj_cache.idx_L2),2);
 	}
+
 	String getting_tag_L1(String str_tag_L1)
 	{
 		return str_tag_L1.substring(0, obj_cache.tag_L1);
 	}
+
 	String getting_tag_L2(String str_tag_L2)
 	{
 		return str_tag_L2.substring(0, obj_cache.tag_L2);
@@ -128,6 +133,7 @@ public class CacheInsert {
 			updating_Cache_L1(rL1_data, rL1_tag, rL1_list, true);
 		}
 	}
+
 	//hit in read in L1
 	void hit_Read_L1(String hRL1_tag, List<Block_Cache> hRL1_list, Block_Cache hRL1_c) {
 		//lru
@@ -143,6 +149,7 @@ public class CacheInsert {
 			}
 		}
 	}
+
 	//writing in L1
 	void writing_L1(String wL1_data, String wL1_bits) {
 		List<Block_Cache> wL1_list = obj_cache.newL1.get(getting_idx_L1(wL1_bits));
@@ -185,6 +192,7 @@ public class CacheInsert {
 			updating_Cache_L1(wL1_data, wL1_tag, wL1_list, false);
 		}
 	}
+
 	//hit write in L1
 	void hit_Write_L1(String hWL1_tag, List<Block_Cache> hWL1_list, Block_Cache hWL1_c) {
 
@@ -202,6 +210,7 @@ public class CacheInsert {
 			}
 		}
 	}
+
 	//reading in L2
 	void reading_L2(String rL1_data, String rL1_bits, boolean rL1_Evict, Block_Cache rL1_block_evicted) {
 
@@ -238,6 +247,7 @@ public class CacheInsert {
 			u_Cache_L2(rL1_data, rL1_tag, rL1_list, true);
 		}
 	}
+
 	//hit read in L2
 	void hit_Read_L2(String hRL2_tag, List<Block_Cache> hRL2_list, Block_Cache hRL2_c) {
 		int hRL2_val = hRL2_c.get_block_Cache_AccessCounter_LRU();
@@ -253,6 +263,7 @@ public class CacheInsert {
 			}
 		}
 	}
+
 	//writing in L2
 	void writing_L2(String wL2_data, String wL2_bits) {
 		List<Block_Cache> wL2_list = obj_cache.newL2.get(getting_idx_L2(wL2_bits));
@@ -283,6 +294,7 @@ public class CacheInsert {
 			u_Cache_L2(wL2_data, wL2_tag, wL2_list, false);
 		}
 	}
+
 	//hit write in L2
 	void hit_Write_L2(String hWL2_tag, List<Block_Cache> hWL2_list, Block_Cache hWL2_c) {
 		int hWL2_val = hWL2_c.get_block_Cache_AccessCounter_LRU();
@@ -299,36 +311,7 @@ public class CacheInsert {
 			}
 		}
 	}
-	int getting_eviction_idx_plru(int[] arr) {
-		int new_mid = (arr.length-1)/2;
-		int lvl_val = (new_mid+1)/2;
-		return remove_allocation(new_mid,lvl_val,arr);
-	}
-	int remove_allocation(int mid, int lvl_val, int[] arr) {
-		if(lvl_val == 0)
-		{
-			if(arr[mid] == 0)
-			{
-				arr[mid] = 1;
-				return mid+1;
-			}
-			else
-			{
-				arr[mid] = 0;
-				return mid;
-			}
-		}
-		else if(arr[mid] == 0)
-		{
-			arr[mid] = 1;
-			return remove_allocation(mid + lvl_val, lvl_val/2, arr);
-		}
-		else
-		{
-			arr[mid] = 0;
-			return remove_allocation(mid - lvl_val, lvl_val/2, arr);
-		}
-	}
+
 	//L1 replacement policy
 	void updating_Cache_L1(String u_data, String u_tag, List<Block_Cache> u_list, boolean u_read) {
 		int uCL1_idx = 0;
@@ -385,6 +368,7 @@ public class CacheInsert {
 			reading_L2(u_data, SSMap.get(u_data), false, null);
 		}
 	}
+
 	int getting_eviction_idx_opt(List<Block_Cache> gvopt_li) {
 		int evopt_idx = 0;
 		int[] arr = new int[gvopt_li.size()];
@@ -427,6 +411,7 @@ public class CacheInsert {
 
 		return evopt_idx;
 	}
+
 	//L2 replacement policy
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
 		int idx = 0;
@@ -474,6 +459,7 @@ public class CacheInsert {
 			evict_L1(got_evict);
 		}
 	}
+
 	void evict_L1(Block_Cache evicted) {
 		int eL1_index = getting_idx_L1(SSMap.get(evicted.get_block_cache_data()));
 		String eL1_tag = getting_tag_L1(SSMap.get(evicted.get_block_cache_data()));
@@ -568,45 +554,17 @@ public class CacheInsert {
 		System.out.println("l. number of L2 writebacks:   "	+	write_backs_L2);
 		System.out.println("m. total memory traffic:      "	+ Memory_Collection);
 	}
+
 	double getting_MissRate_L1() {
 		return (double)(read_Miss_L1 + write_Miss_L1)/(double)(reads_L1 + writes_L1);
 	}
+
 	double getting_MissRate_L2() {
 		return (double)(read_miss_L2)/(double)(read_Miss_L1 + write_Miss_L1);
 	}
+	
 	String binaryToHex(String str)
 	{
 		return new BigInteger(str,2).toString(16);
-	}
-}
-class Hex_Converter {
-	static Map<Character,String> conv_Map = new HashMap<>() {{
-		put('0',"0000");
-		put('1',"0001");
-		put('2',"0010");
-		put('3',"0011");
-		put('4',"0100");
-		put('5',"0101");
-		put('6',"0110");
-		put('7',"0111");
-		put('8',"1000");
-		put('9',"1001");
-		put('A',"1010");
-		put('B',"1011");
-		put('C',"1100");
-		put('D',"1101");
-		put('E',"1110");
-		put('F',"1111");
-	}};
-	static String conv_hex_2_bin(String s)
-	{
-		String ret = "";
-		s = s.toUpperCase();
-		int x =0;
-		while(x<s.length()){
-			ret = ret + conv_Map.get(s.charAt(x));
-			x++;
-		}
-		return ret;
 	}
 }
