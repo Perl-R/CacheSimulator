@@ -5,23 +5,35 @@ public class sim_cache {
 	
 	public static void main(String[] args) throws IOException {
 		//Getting parameters as input from command line
-		Scanner myObj = new Scanner(System.in);  // Creating a Scanner object for getting trace file as input
+		Scanner scanner = new Scanner(System.in);  // Creating a Scanner object for getting trace file as input
 		System.out.println("trace_file:");
-		String tf = myObj.nextLine();
+		String tf = scanner.nextLine();
 		System.out.println("BLOCKSIZE:");
-		int a = myObj.nextInt();
+		int a = scanner.nextInt();
 		System.out.println("L1_SIZE:");
-		int b = myObj.nextInt();
+		int b = scanner.nextInt();
 		System.out.println("L1_ASSOC:");
-		int c = myObj.nextInt();
+		int c = scanner.nextInt();
 		System.out.println("L2_SIZE:");
-		int d = myObj.nextInt();
+		int d = scanner.nextInt();
 		System.out.println("L2_ASSOC:");
-		int e = myObj.nextInt();
+		int e = scanner.nextInt();
+		/*
+		 *  0: LRU
+		 *  1: P-LRU
+		 *  2: Optimal
+		 *  Note: We need to implement FIFO
+		 */
 		System.out.println("REPLACEMENT POLICY:");
-		int f = myObj.nextInt();
+		int f = scanner.nextInt();
+		/*
+		 * 0: non-inclusive
+		 * 1: inclusive
+		 */
 		System.out.println("INCLUSION PROPERTY:");
-		int g = myObj.nextInt();
+		int g = scanner.nextInt();
+
+		scanner.close();
 
 		//Calling the CacheMain Class and inserting the values in the respective parameters
 		new Main_Caching_System(

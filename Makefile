@@ -12,6 +12,11 @@ DEBUG = -g
 CFLAGS = $(DEBUG) -deprecation
 
 sim_cache:
+	$(JAVAC) $(CFLAGS) Hex_Converter.java
+	$(JAVAC) $(CFLAGS) Node.java
+	$(JAVAC) $(CFLAGS) Block_Cache.java
+	$(JAVAC) $(CFLAGS) Cache.java
+	$(JAVAC) $(CFLAGS) Main_Caching_System.java
 	$(JAVAC) $(CFLAGS) CacheInsert.java
 	$(JAVAC) $(CFLAGS) sim_cache.java
 	

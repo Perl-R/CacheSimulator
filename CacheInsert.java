@@ -44,21 +44,7 @@ public class CacheInsert {
 	{
 		return str_tag_L2.substring(0, obj_cache.tag_L2);
 	}
-	class Node{
-		String node_str;
-		int node_index;
-		public Node(String str, int index) {
-			super();
-			this.node_str = str;
-			this.node_index = index;
-		}
-		public String getNode_str() {
-			return node_str;
-		}
-		public int getNode_index() {
-			return node_index;
-		}
-	}
+
 	Map<Integer, List<Node>> hex = new HashMap<>();
 	void insert_Cache_Data() {
 		int i1=0;
@@ -603,7 +589,7 @@ public class CacheInsert {
 		return new BigInteger(str,2).toString(16);
 	}
 }
-class Convert {
+class Hex_Converter {
 	static Map<Character,String> conv_Map = new HashMap<>() {{
 		put('0',"0000");
 		put('1',"0001");
@@ -632,178 +618,5 @@ class Convert {
 			x++;
 		}
 		return ret;
-	}
-}
-class Main_Caching_System {
-	int MCS_Size_Block, MCS_Size_L1, MCS_Assoc_L1, MCS_Size_L2, MCS_Assoc_L2, MCS_Replacement_Policy, MCS_Inclusion_Property, MCS_Rows_L1, MCS_Rows_L2;
-	String traceFile;
-	//list and map declaration
-	final List<String> new_obj_data;
-	final Map<String,String> new_obj_map;
-	final Cache new_obj_cache;
-	//get command line parameter input
-	public Main_Caching_System(int cons_MCS_Size_Block, int cons_MCS_Size_L1, int cons_MCS_Assoc_L1, int cons_MCS_Size_L2, int cons_MCS_Assoc_L2, int cons_MCS_Replacement_Policy,
-							   int cons_MCS_Inclusion_Property, String cons_traceFile) throws IOException {
-		this.MCS_Size_Block = cons_MCS_Size_Block;
-		this.MCS_Size_L1 = cons_MCS_Size_L1;
-		this.MCS_Assoc_L1 = cons_MCS_Assoc_L1;
-		this.MCS_Size_L2 = cons_MCS_Size_L2;
-		this.MCS_Assoc_L2 = cons_MCS_Assoc_L2;
-		this.MCS_Replacement_Policy = cons_MCS_Replacement_Policy;
-		this.MCS_Inclusion_Property = cons_MCS_Inclusion_Property;
-		this.traceFile = cons_traceFile;
-		// evaluating l1's and l2's rows and sets and cache architecture structuring
-		func_MCS_Rows_Calc();
-		new_obj_cache = new Cache(MCS_Rows_L1, cons_MCS_Assoc_L1, MCS_Rows_L2, cons_MCS_Assoc_L2, cons_MCS_Size_Block, cons_MCS_Replacement_Policy, cons_MCS_Inclusion_Property, cons_MCS_Size_L1, cons_MCS_Size_L2, cons_MCS_Assoc_L1, cons_MCS_Assoc_L2, cons_traceFile);
-		// getting arraylist and hashmap data
-		new_obj_data = new ArrayList<>();
-		new_obj_map = new HashMap<>();
-		//simplifying the data
-		func_MCS_readF();
-		//insert in cache
-		func_MCS_insert();
-	}
-	void func_MCS_insert() {
-		new CacheInsert(new_obj_cache, new_obj_map, new_obj_data);
-	}
-	void func_MCS_Rows_Calc() {
-		//evaluating if row number is +ve or -ve
-		MCS_Assoc_L1 = MCS_Assoc_L1 == 0? 1 : MCS_Assoc_L1;
-		MCS_Assoc_L2 = MCS_Assoc_L2 == 0? 1 : MCS_Assoc_L2;
-		//evaluating l1 and l2 rows
-		MCS_Rows_L1 = MCS_Size_L1 / (MCS_Assoc_L1 * MCS_Size_Block);
-		MCS_Rows_L2 = MCS_Size_L2 / (MCS_Assoc_L2 * MCS_Size_Block);
-	}
-	void func_MCS_readF() throws IOException {
-		//getting and understanding trace file and applying exception if file not found
-		File importF= new File("traces/" + traceFile);
-		BufferedReader new_br = new BufferedReader(new FileReader(importF));
-		String new_str;
-		//check whether line containing instruction is valid or not?
-		while((new_str = new_br.readLine()) != null)
-		{
-			//skip if not getting instruction
-			if(new_str.length() == 0)
-				continue;
-			//instruction append
-			new_obj_data.add(new_str);
-			func_MCS_parse_Trace_Data(new_str);
-		}
-		//exit stream
-		new_br.close();
-	}
-	// scanning the tracefile and get the data
-	void func_MCS_parse_Trace_Data(String new_str) {
-		new_str = new_str.trim();
-		String pointer;
-		//splitting the instruction line into action and hexcode
-		pointer = new_str = new_str.split(" ")[1];
-		if(new_obj_map.containsKey(pointer))
-			return;
-		//concatenate 0 if instruction hexcode is not 8 bit
-		String concatenate_zeros = "00000000";
-		if(pointer.length() != 8)
-		{
-			pointer = concatenate_zeros.substring(0 , 8 - new_str.length()) + pointer;
-		}
-		new_obj_map.put(new_str, Convert.conv_hex_2_bin(pointer));
-	}
-}
-class Block_Cache {
-	boolean block_cache_dirtyBit;
-	String block_cache_data, block_cache_tag;
-	int block_Cache_AccessCounter_LRU, block_Cache_AccessCounter_OPT;
-	public Block_Cache(String cons_block_cache_data, String cons_block_cache_tag, int cons_block_Cache_AccessCounter_LRU, boolean cons_block_cache_dirtyBit) {
-		super();
-		this.block_cache_data = cons_block_cache_data;
-		this.block_cache_tag = cons_block_cache_tag;
-		block_Cache_AccessCounter_LRU = cons_block_Cache_AccessCounter_LRU;
-		this.block_cache_dirtyBit = cons_block_cache_dirtyBit;
-		block_Cache_AccessCounter_OPT = 0;
-	}
-	public String get_block_cache_data() {
-		return block_cache_data;
-	}
-	public String get_block_cache_Tag() {
-		return block_cache_tag;
-	}
-	public int get_block_Cache_AccessCounter_LRU() {
-		return block_Cache_AccessCounter_LRU;
-	}
-	public void set_block_Cache_AccessCounter_LRU(int arg_lRUaccessCounter) {
-		block_Cache_AccessCounter_LRU = arg_lRUaccessCounter;
-	}
-	public boolean is_block_cache_dirtyBit() {
-		return block_cache_dirtyBit;
-	}
-	public void set_block_cache_dirtyBit(boolean arg_dirtyBit) {
-		this.block_cache_dirtyBit = arg_dirtyBit;
-	}
-	public int block_Cache_AccessCounter_OPT() {
-		return block_Cache_AccessCounter_OPT;
-	}
-	public void set_block_Cache_AccessCounter_OPT(int arg_AccessCounter_Optimal) {
-		block_Cache_AccessCounter_OPT = arg_AccessCounter_Optimal;
-	}
-}
-class Cache {
-	List<List<Block_Cache>> newL1, newL2;
-	int tag_L1, idx_L1, offset, set_L1, tag_L2, idx_L2, set_L2,
-			replacementPolicy,inclusionProperty, blockSize, size_L1, Assoc_L1,
-			size_L2, Assoc_L2;
-	String trace_File;
-	int logOfTwo(int y) {
-		int a = (int) ((Math.log(y)) / (Math.log(2)));
-		return a;
-	}
-	//structuring the Cache Memory
-	Cache(int cons_idx_L1, int cons_set_L1, int cons_idx_L2, int cons_set_L2, int cons_blockSize, int cons_replacementPolicy, int cons_inclusionProperty, int cons_size_L1, int cons_size_L2, int cons_Assoc_L1, int cons_Assoc_L2, String cons_traceFile)
-	{
-		this.inclusionProperty = cons_inclusionProperty;
-		this.replacementPolicy = cons_replacementPolicy;
-		this.blockSize = cons_blockSize;
-		this.set_L1 = cons_set_L1;
-		this.set_L2 = cons_set_L2;
-		newL1 = new ArrayList<>();
-		newL2 = new ArrayList<>();
-		List<Block_Cache> newtemp;
-		int i9=0;
-		while(i9<cons_idx_L1){
-			newtemp = new ArrayList<>();
-			newL1.add(newtemp);
-			i9++;
-		}
-		int i10 = 0;
-		while(i10<cons_idx_L2){
-			newtemp = new ArrayList<>();
-			newL2.add(newtemp);
-			i10++;
-		}
-		offset = logOfTwo(blockSize);
-		this.idx_L1 = logOfTwo(cons_idx_L1);
-		this.idx_L2 = logOfTwo(cons_idx_L2);
-		tag_L1 = 32 - (this.idx_L1 + offset);
-		tag_L2 = 32 - (this.idx_L2 + offset);
-		this.size_L1 = cons_size_L1;
-		this.size_L2 = cons_size_L2;
-		this.Assoc_L1 = cons_Assoc_L1;
-		this.Assoc_L2 = cons_Assoc_L2;
-		this.trace_File = cons_traceFile;
-		init_plru();
-	}
-	int[][] newplru_L1;
-	int[][] newplru_L2;
-	int mid_plru_L1, mid_plru_L2;
-	void init_plru() {
-		int temp_set_L1 = set_L1;
-		int temp_set_L2 = set_L2;
-		if(set_L1 < 2)
-			temp_set_L1 = 2;
-		if(set_L2 <2)
-			temp_set_L2 = 2;
-		newplru_L1 = new int [newL1.size()][temp_set_L1-1];
-		newplru_L2 = new int [newL2.size()][temp_set_L2-1];
-		mid_plru_L1 = (temp_set_L1-2)/2;
-		mid_plru_L2 = (temp_set_L2-2)/2;
 	}
 }
