@@ -46,40 +46,47 @@ public class CacheInsert {
 	}
 
 	Map<Integer, List<Node>> hex = new HashMap<>();
+
 	void insert_Cache_Data() {
-		int i1=0;
-		while(i1<SData.size()){
-			String ICD_str = SData.get(i1);
+
+		for (int i = 0; i < SData.size(); i++) {
+			String ICD_str = SData.get(i);
 			String ICD_temp = ICD_str.split(" ")[1];
 			int ICD_index = getting_idx_L1(SSMap.get(ICD_temp));
 			if(!hex.containsKey(ICD_index))
 				hex.put(ICD_index, new ArrayList<>());
-			hex.get(ICD_index).add(new Node(ICD_temp,i1));
-			i1++;
+			hex.get(ICD_index).add(new Node(ICD_temp,i));
 		}
-		int i2=0;
-		while(i2<SData.size()){
-			String ICD_str = SData.get(i2);
-			global_Idx_Optimal = i2;
+
+		for (int i = 0; i < SData.size(); i++) 
+		{
+			String ICD_str = SData.get(i);
+			global_Idx_Optimal = i;
 			boolean ICD_write_read = ICD_str.split(" ")[0].equals("r");
 			ICD_str = ICD_str.split(" ")[1];
 			if(ICD_write_read)
 				reading_L1(ICD_str, SSMap.get(ICD_str));
 			else
 				writing_L1(ICD_str, SSMap.get(ICD_str));
-			i2++;
 		}
+
+		// Calculate Total Memory Traffic
 		if(obj_cache.newL2.size() == 0)
 		{
-			Memory_Collection = read_Miss_L1 + write_Miss_L1 +write_backs_L1;
+			Memory_Collection = read_Miss_L1 + write_Miss_L1 + write_backs_L1;
 		}
-		else
-			Memory_Collection = read_miss_L2 + write_Miss_L2 +write_backs_L2 + eviction_L1;
+		else 
+		{
+			Memory_Collection = read_miss_L2 + write_Miss_L2 + write_backs_L2 + eviction_L1;
+		}
+		
 		print_Cache();
 	}
+
 	int blank_Flag_L1 = 0;
 	List<Integer> blank_Idx_L1 = new ArrayList<>();
 	int row_Idx = 0;
+
 	//reading L1 cache
 	void reading_L1(String rL1_data, String rL1_bits) {
 		List<Block_Cache> rL1_list = obj_cache.newL1.get(getting_idx_L1(rL1_bits));
@@ -343,20 +350,19 @@ public class CacheInsert {
 				}
 				break;
 			}
+			// Perform LRU Replacement (0) by default
 			default:{
-
-				int i3=0;
-				while(i3<u_list.size()){
-					Block_Cache cb = u_list.get(i3);
+				for (int i = 0; i < u_list.size(); i++)
+				{
+					Block_Cache cb = u_list.get(i);
 					if(cb.get_block_Cache_AccessCounter_LRU() == 0)
 					{
-						uCL1_idx = i3;
+						uCL1_idx = i;
 					}
 					else
 					{
 						cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
 					}
-					i3++;
 				}
 				break;
 			}
@@ -403,8 +409,11 @@ public class CacheInsert {
 		}
 		int max = -1;
 		int i4=0;
+		/* 
+		 * 
+		 */
 		while (i4 < arr.length){
-			max = Math.max(i4, max);
+			max = Math.max(arr[i4], max);
 			i4++;
 		}
 		int leastUsed = -1;
@@ -436,20 +445,20 @@ public class CacheInsert {
 					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
 			}
 		}
+		// Case for LRU
 		else
 		{
-			int i6=0;
-			while(i6<UCL2_list.size()){
-				Block_Cache cb = UCL2_list.get(i6);
+			for (int i = 0; i < UCL2_list.size(); i++) 
+			{
+				Block_Cache cb = UCL2_list.get(i);
 				if(cb.get_block_Cache_AccessCounter_LRU() == 0)
 				{
-					idx = i6;
+					idx = i;
 				}
 				else
 				{
 					cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
 				}
-				i6++;
 			}
 		}
 		Block_Cache got_evict = UCL2_list.remove(idx);
@@ -485,51 +494,79 @@ public class CacheInsert {
 			}
 		}
 	}
+
 	void print_Cache() {
-		System.out.println("============= Simulator configuration ============");
+		System.out.println("===== Simulator configuration =====");
 		System.out.println("BLOCKSIZE:             "	+	obj_cache.blockSize);
 		System.out.println("L1_SIZE:               "	+	obj_cache.size_L1);
 		System.out.println("L1_ASSOC:              "	+	obj_cache.Assoc_L1);
 		System.out.println("L2_SIZE:               "	+	obj_cache.size_L2);
 		System.out.println("L2_ASSOC:              "	+	obj_cache.Assoc_L2);
-		System.out.println("REPLACEMENT POLICY:    "	+	(obj_cache.replacementPolicy == 0?"LRU":(obj_cache.replacementPolicy == 1?"Pseudo-LRU":"Optimal")));
+		System.out.println("REPLACEMENT POLICY:    "	+	(obj_cache.replacementPolicy == 0?"LRU":(obj_cache.replacementPolicy == 1?"Pseudo-LRU":"optimal")));
 		System.out.println("INCLUSION PROPERTY:    "	+	(obj_cache.inclusionProperty == 0?"non-inclusive":"inclusive"));
 		System.out.println("trace_file:            "	+	obj_cache.trace_File);
-		System.out.println("================== L1 contents ===================");
-		int i7 = 0;
-		while(i7< obj_cache.newL1.size()){
-			System.out.print("Set     "+i7+":");
-			for(Block_Cache cb: obj_cache.newL1.get(i7)) {
+		
+		// Print Contents of L1 Cache
+		System.out.println("===== L1 contents =====");
+		for (int i = 0; i < obj_cache.newL1.size(); i++) 
+		{
+			System.out.print("Set     "+i+":");
+			for(Block_Cache cb: obj_cache.newL1.get(i)) {
 				System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
 			}
 			System.out.println();
-			i7++;
 		}
+
+		// Print Contents of L2 Cache (if available)
 		if(obj_cache.newL2.size() != 0)
 		{
-			System.out.println("============== L2 contents ===============");
-			int i8 = 0;
-			while(i8< obj_cache.newL2.size()){
-				System.out.print("Set     "+i8+":");
-				for(Block_Cache cb: obj_cache.newL2.get(i8)) {
+			System.out.println("===== L2 contents =====");
+			for (int i = 0; i < obj_cache.newL2.size(); i++) 
+			{
+				System.out.print("Set     "+i+":");
+				for(Block_Cache cb: obj_cache.newL2.get(i)) {
 					System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
 				}
 				System.out.println();
-				i8++;
 			}
 		}
-		System.out.println("=============== Simulation results (raw) ==============");
+
+		System.out.println("===== Simulation results (raw) =====");
 		System.out.println("a. number of L1 reads:        "	+	reads_L1);
 		System.out.println("b. number of L1 read misses:  "	+	read_Miss_L1);
 		System.out.println("c. number of L1 writes:       "	+	writes_L1);
 		System.out.println("d. number of L1 write misses: "	+	write_Miss_L1);
-		System.out.println("e. L1 miss rate:              "	+	String.format("%.6f", getting_MissRate_L1()));
+
+		// Here to fix formatting to match validation output
+		// https://stackoverflow.com/questions/703396/how-to-nicely-format-floating-numbers-to-string-without-unnecessary-decimal-0s
+		String l1_miss_rate = "";
+		if (getting_MissRate_L1() % 1.0 != 0) 
+		{
+			l1_miss_rate = String.format("%.6f", getting_MissRate_L1());
+		}
+		else 
+		{
+			l1_miss_rate = String.format("%.0f", getting_MissRate_L1());
+		}
+
+		System.out.println("e. L1 miss rate:              "	+	l1_miss_rate);
 		System.out.println("f. number of L1 writebacks:   "	+	write_backs_L1);
 		System.out.println("g. number of L2 reads:        "	+	reads_L2);
 		System.out.println("h. number of L2 read misses:  "	+	read_miss_L2);
 		System.out.println("i. number of L2 writes:       "	+	writes_L2);
 		System.out.println("j. number of L2 write misses: "	+	write_Miss_L2);
-		System.out.println("k. L2 miss rate:              "	+	String.format("%.6f", getting_MissRate_L2()));
+
+		String l2_miss_rate = "";
+		if (getting_MissRate_L2() % 1.0 != 0) 
+		{
+			l2_miss_rate = String.format("%.6f", getting_MissRate_L2());
+		}
+		else 
+		{
+			l2_miss_rate = String.format("%.0f", getting_MissRate_L2());
+		}
+
+		System.out.println("k. L2 miss rate:              "	+	l2_miss_rate);
 		System.out.println("l. number of L2 writebacks:   "	+	write_backs_L2);
 		System.out.println("m. total memory traffic:      "	+ Memory_Collection);
 	}
