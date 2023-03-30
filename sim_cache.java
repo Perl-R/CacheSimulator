@@ -2,43 +2,49 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class sim_cache {
-	
+
+	final static int NUM_ARGS = 8;
+
+	// Example Usage: java sim_cache gcc_trace.txt 16 1024 2 0 0 0 0
 	public static void main(String[] args) throws IOException {
-		//Getting parameters as input from command line
-		Scanner scanner = new Scanner(System.in);  // Creating a Scanner object for getting trace file as input
-		System.out.println("trace_file:");
-		String tf = scanner.nextLine();
-		System.out.println("BLOCKSIZE:");
-		int a = scanner.nextInt();
-		System.out.println("L1_SIZE:");
-		int b = scanner.nextInt();
-		System.out.println("L1_ASSOC:");
-		int c = scanner.nextInt();
-		System.out.println("L2_SIZE:");
-		int d = scanner.nextInt();
-		System.out.println("L2_ASSOC:");
-		int e = scanner.nextInt();
-		/*
-		 *  0: LRU
-		 *  1: P-LRU (This will become FIFO)
-		 *  2: Optimal
-		 *  Note: We need to implement FIFO
-		 */
-		System.out.println("REPLACEMENT POLICY:");
-		int f = scanner.nextInt();
-		/*
-		 * 0: non-inclusive
-		 * 1: inclusive
-		 */
-		System.out.println("INCLUSION PROPERTY:");
-		int g = scanner.nextInt();
+		if (args.length == NUM_ARGS) 
+		{
+			// Trace File
+			String tf = args[0];
+			// Block Size
+			int block_size = Integer.parseInt(args[1]);
+			// L1_SIZE		
+			int l1_size = Integer.parseInt(args[2]);
+			// L1_ASSOC
+			int l1_assoc = Integer.parseInt(args[3]);
+			// L2_SIZE
+			int l2_size = Integer.parseInt(args[4]);
+			// L2_ASSOC
+			int l2_assoc = Integer.parseInt(args[5]);
 
-		scanner.close();
+			/*
+			*  Replacement Policy
+			*  0: LRU
+			*  1: P-LRU (This will become FIFO)
+			*  2: Optimal
+			*  Note: We need to implement FIFO
+			*/
+			int replacement_policy = Integer.parseInt(args[6]);
 
-		//Calling the CacheMain Class and inserting the values in the respective parameters
-		new Main_Caching_System(
-				a, b, c, d, e, f, g, tf);
+			/*
+			*  Inclusion Property
+			* 0: non-inclusive
+			* 1: inclusive
+			*/
+			int inclusion_property = Integer.parseInt(args[7]);
 
+			//Calling the CacheMain Class and inserting the values in the respective parameters
+			new Main_Caching_System(
+				block_size, l1_size, l1_assoc, l2_size, l2_assoc, replacement_policy, inclusion_property, tf);
+		}
+		else
+		{
+			System.out.println("Not enough (or too many) command line arguments supplied");
+		}
 	}
-
 }
