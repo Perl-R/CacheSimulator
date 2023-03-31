@@ -494,9 +494,9 @@ public class CacheInsert {
 		System.out.println("===== L1 contents =====");
 		for (int i = 0; i < obj_cache.newL1.size(); i++) 
 		{
-			System.out.print("Set     "+i+":");
+			System.out.print("Set     " + String.format("%-8s", i + ":"));
 			for(Block_Cache cb: obj_cache.newL1.get(i)) {
-				System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
+				System.out.print(binaryToHex(cb.get_block_cache_Tag()) + String.format("%-4s", cb.is_block_cache_dirtyBit()?" D":""));
 			}
 			System.out.println();
 		}
@@ -507,9 +507,9 @@ public class CacheInsert {
 			System.out.println("===== L2 contents =====");
 			for (int i = 0; i < obj_cache.newL2.size(); i++) 
 			{
-				System.out.print("Set     "+i+":");
+				System.out.print("Set     " + String.format("%-8s", i+":"));
 				for(Block_Cache cb: obj_cache.newL2.get(i)) {
-					System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
+					System.out.print(binaryToHex(cb.get_block_cache_Tag()) + String.format("%-5s", cb.is_block_cache_dirtyBit()?" D":""));
 				}
 				System.out.println();
 			}
