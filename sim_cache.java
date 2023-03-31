@@ -7,7 +7,7 @@ public class sim_cache {
 
 	// Example Usage: java sim_cache gcc_trace.txt 16 1024 2 0 0 0 0
 	public static void main(String[] args) throws IOException {
-		if (args.length == NUM_ARGS) 
+		if (args.length >= NUM_ARGS) 
 		{
 			// Trace File
 			String tf = args[0];
