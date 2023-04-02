@@ -10,6 +10,10 @@ public class CacheInsert {
 	int reads_L2, read_miss_L2, writes_L2, write_Miss_L2, write_backs_L2, Memory_Collection;
 	int eviction_L1 = 0;
 	int global_Idx_Optimal = 0;
+	ArrayList<Integer> blank_Flag_L1;
+	ArrayList<ArrayList<Integer>> blank_Idx_L1;
+	int row_Idx = 0;
+	Map<Integer, List<Node>> hex = new HashMap<>();
 
 	public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
 		this.obj_cache = cons_cache;
@@ -25,6 +29,14 @@ public class CacheInsert {
 		writes_L2 =0;
 		write_Miss_L2 =0;
 		write_backs_L2 = 0;
+		blank_Idx_L1 = new ArrayList<ArrayList<Integer>>(obj_cache.size_L1 / obj_cache.blockSize);
+		blank_Flag_L1 = new ArrayList<Integer>(obj_cache.size_L1 / obj_cache.blockSize);
+		
+		for (int i = 0; i < obj_cache.size_L1 / obj_cache.blockSize; i++)
+		{
+			blank_Idx_L1.add(new ArrayList<Integer>());
+			blank_Flag_L1.add(0);
+		}
 		insert_Cache_Data();
 	}
 
@@ -49,8 +61,6 @@ public class CacheInsert {
 	{
 		return str_tag_L2.substring(0, obj_cache.tag_L2);
 	}
-
-	Map<Integer, List<Node>> hex = new HashMap<>();
 
 	void insert_Cache_Data() {
 
@@ -88,10 +98,6 @@ public class CacheInsert {
 		print_Cache();
 	}
 
-	int blank_Flag_L1 = 0;
-	List<Integer> blank_Idx_L1 = new ArrayList<>();
-	int row_Idx = 0;
-
 	//reading L1 cache
 	void reading_L1(String rL1_data, String rL1_bits) {
 		List<Block_Cache> rL1_list = obj_cache.newL1.get(getting_idx_L1(rL1_bits));
@@ -114,10 +120,10 @@ public class CacheInsert {
 				cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
 				cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT()+1);
 			}
-			if(blank_Flag_L1 != 0)
+			if(blank_Flag_L1.get(row_Idx) != 0)
 			{
-				rL1_list.add(blank_Idx_L1.get(0),new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false));
-				blank_Flag_L1--;
+				rL1_list.add(blank_Idx_L1.get(row_Idx).remove(0),new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false));
+				blank_Flag_L1.set(row_Idx, blank_Flag_L1.get(row_Idx) - 1);
 			}
 			else
 			{
@@ -173,10 +179,10 @@ public class CacheInsert {
 				cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
 				cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT()+1);
 			}
-			if(blank_Flag_L1 != 0)
+			if(blank_Flag_L1.get(row_Idx) != 0)
 			{
-				wL1_list.add(blank_Idx_L1.get(0),new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true));
-				blank_Flag_L1--;
+				wL1_list.add(blank_Idx_L1.get(row_Idx).remove(0),new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true));
+				blank_Flag_L1.set(row_Idx, blank_Flag_L1.get(row_Idx) - 1);
 			}
 			else
 			{
@@ -461,19 +467,27 @@ public class CacheInsert {
 	}
 
 	void evict_L1(Block_Cache evicted) {
+		
 		int eL1_index = getting_idx_L1(SSMap.get(evicted.get_block_cache_data()));
 		String eL1_tag = getting_tag_L1(SSMap.get(evicted.get_block_cache_data()));
 		List<Block_Cache> li = obj_cache.newL1.get(eL1_index);
-		for(Block_Cache cb: li)
-		{
-			if(cb.get_block_cache_Tag().equals(eL1_tag))
-			{
+		for(Block_Cache cb: li) {
+			if (cb.get_block_cache_Tag().equals(eL1_tag)) {
 				int idx = li.indexOf(cb);
-				blank_Flag_L1++;
-				blank_Idx_L1.add(idx);
-				Block_Cache eL1_var = li.remove(idx);
-				if(eL1_var.is_block_cache_dirtyBit())
+				Block_Cache eL1_var = li.get(idx);
+				
+				// if blank_Idx_L1 already contains idx do nothing
+				if (!blank_Idx_L1.get(eL1_index).contains(idx)) {
+					blank_Idx_L1.get(eL1_index).add(idx);
+					blank_Flag_L1.set(eL1_index, blank_Flag_L1.get(eL1_index) + 1);
+				}
+				
+				Collections.sort(blank_Idx_L1.get(eL1_index));
+				li.set(idx, new Block_Cache("", "", 0, false));
+				
+				if (eL1_var.is_block_cache_dirtyBit())
 					eviction_L1++;
+				
 				break;
 			}
 		}
@@ -494,9 +508,9 @@ public class CacheInsert {
 		System.out.println("===== L1 contents =====");
 		for (int i = 0; i < obj_cache.newL1.size(); i++) 
 		{
-			System.out.print("Set     "+i+":");
+			System.out.print("Set     " + String.format("%-8s", i + ":"));
 			for(Block_Cache cb: obj_cache.newL1.get(i)) {
-				System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
+				System.out.print(binaryToHex(cb.get_block_cache_Tag()) + String.format("%-4s", cb.is_block_cache_dirtyBit()?" D":""));
 			}
 			System.out.println();
 		}
@@ -507,9 +521,9 @@ public class CacheInsert {
 			System.out.println("===== L2 contents =====");
 			for (int i = 0; i < obj_cache.newL2.size(); i++) 
 			{
-				System.out.print("Set     "+i+":");
+				System.out.print("Set     " + String.format("%-8s", i+":"));
 				for(Block_Cache cb: obj_cache.newL2.get(i)) {
-					System.out.print(" "+binaryToHex(cb.get_block_cache_Tag())+(cb.is_block_cache_dirtyBit()?" D":" "));
+					System.out.print(binaryToHex(cb.get_block_cache_Tag()) + String.format("%-5s", cb.is_block_cache_dirtyBit()?" D":""));
 				}
 				System.out.println();
 			}
