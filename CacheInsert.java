@@ -15,6 +15,9 @@ public class CacheInsert {
 	int row_Idx = 0;
 	Map<Integer, List<Node>> hex = new HashMap<>();
 
+	final static String[] REPLACEMENT_POLICIES = {
+		"LRU", "FIFO", "optimal", "SHIP", "Hawkeye", "MockingJay", "Custom: LRU + Random"};
+
 	public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
 		this.obj_cache = cons_cache;
 		this.SSMap = cons_SSMap;
@@ -339,6 +342,41 @@ public class CacheInsert {
 				}
 				break;
 			}
+			/*
+			 * Custom LRU + Random Replacement Case
+			 * When LRU Misses Exceed a Threshold, we resort to Random Replacement
+			 */
+			case 6:{
+				int min_misses = obj_cache.size_L1;
+				double miss_threshold = 0.2;
+	
+				// If we exceed this threshold we will random replace
+				if (read_Miss_L1 + write_Miss_L1 >= min_misses
+					&& getting_MissRate_L1() >= miss_threshold)
+				{
+					Random rand = new Random();
+					int upperbound = u_list.size();					
+					int rand_index = rand.nextInt(upperbound);
+					uCL1_idx = rand_index;
+				}
+				// Otherwise we perform standard LRU
+				else 
+				{
+					for (int i = 0; i < u_list.size(); i++)
+					{
+						Block_Cache cb = u_list.get(i);
+						if(cb.get_block_Cache_AccessCounter_LRU() <= 0)
+						{
+							uCL1_idx = i;
+						}
+						else
+						{
+							cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
+						}
+					}
+				}
+				break;
+			}
 			// Perform LRU Replacement (0) by default
 			default:{
 				for (int i = 0; i < u_list.size(); i++)
@@ -434,6 +472,39 @@ public class CacheInsert {
 					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
 			}
 		}
+		/*
+		* Custom LRU + Random Replacement Case
+		*/
+		else if (obj_cache.replacementPolicy == 6) {
+			int min_misses = obj_cache.size_L2;
+			double miss_threshold = 0.15;
+
+			// If we exceed this threshold we will random replace
+			if (read_miss_L2 + write_Miss_L2 >= min_misses
+				&& getting_MissRate_L2() >= miss_threshold)
+			{
+				Random rand = new Random();
+				int upperbound = UCL2_list.size();					
+				int rand_index = rand.nextInt(upperbound);
+				idx = rand_index;
+			}
+			// Otherwise we perform standard LRU
+			else 
+			{
+				for (int i = 0; i < UCL2_list.size(); i++)
+				{
+					Block_Cache cb = UCL2_list.get(i);
+					if(cb.get_block_Cache_AccessCounter_LRU() <= 0)
+					{
+						idx = i;
+					}
+					else
+					{
+						cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU()-1);
+					}
+				}
+			}
+		}
 		// Case for LRU
 		else
 		{
@@ -500,7 +571,7 @@ public class CacheInsert {
 		System.out.println("L1_ASSOC:              "	+	obj_cache.Assoc_L1);
 		System.out.println("L2_SIZE:               "	+	obj_cache.size_L2);
 		System.out.println("L2_ASSOC:              "	+	obj_cache.Assoc_L2);
-		System.out.println("REPLACEMENT POLICY:    "	+	(obj_cache.replacementPolicy == 0?"LRU":(obj_cache.replacementPolicy == 1?"Pseudo-LRU":"optimal")));
+		System.out.println("REPLACEMENT POLICY:    "	+	REPLACEMENT_POLICIES[obj_cache.replacementPolicy]);
 		System.out.println("INCLUSION PROPERTY:    "	+	(obj_cache.inclusionProperty == 0?"non-inclusive":"inclusive"));
 		System.out.println("trace_file:            "	+	obj_cache.trace_File);
 		
