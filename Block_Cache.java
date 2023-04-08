@@ -6,6 +6,10 @@ class Block_Cache {
 	boolean block_cache_dirtyBit;
 	String block_cache_data, block_cache_tag;
 	int block_Cache_AccessCounter_LRU, block_Cache_AccessCounter_OPT;
+	// for SHiP
+	boolean outcome;
+	int signature_m;
+
 	public Block_Cache(String cons_block_cache_data, String cons_block_cache_tag, int cons_block_Cache_AccessCounter_LRU, boolean cons_block_cache_dirtyBit) {
 		super();
 		this.block_cache_data = cons_block_cache_data;
@@ -13,6 +17,21 @@ class Block_Cache {
 		block_Cache_AccessCounter_LRU = cons_block_Cache_AccessCounter_LRU;
 		this.block_cache_dirtyBit = cons_block_cache_dirtyBit;
 		block_Cache_AccessCounter_OPT = 0;
+		// SHiP
+		outcome = false;
+		signature_m = this.hashCode();
+	}
+	public void set_outcome(boolean truthValue) {
+		this.outcome = truthValue;
+	}
+	public boolean get_outcome() {
+		return outcome;
+	}
+	public void set_signature_m(int i) {
+		this.signature_m = i;
+	}
+	public int get_signature_m() {
+		return signature_m;
 	}
 	public String get_block_cache_data() {
 		return block_cache_data;
