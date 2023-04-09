@@ -13,6 +13,7 @@ public class CacheInsert {
 	ArrayList<Integer> blank_Flag_L1;
 	ArrayList<ArrayList<Integer>> blank_Idx_L1;
 	int row_Idx = 0;
+	int ev_idx_FIFO = 0;
 	Map<Integer, List<Node>> hex = new HashMap<>();
 
 	public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
@@ -325,7 +326,8 @@ public class CacheInsert {
 		{
 			// TODO: This will become the case for FIFO
 			case 1:{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+				uCL1_idx = ev_idx_FIFO;
+//				ev_idx_FIFO = (ev_idx_FIFO + 1) % u_list.size();
 				break;
 			}
 			case 2:{
@@ -361,10 +363,19 @@ public class CacheInsert {
 		{
 			write_backs_L1++;
 		}
-		u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+		if (obj_cache.replacementPolicy == 1) {
+			u_list.add(uCL1_idx + 1, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+		}
+		else {
+			u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+		}
 		if(u_read)
 		{
-			u_list.get(uCL1_idx).set_block_cache_dirtyBit(false);
+			if (obj_cache.replacementPolicy == 1) {
+				u_list.get(uCL1_idx + 1).set_block_cache_dirtyBit(false);
+			} else {
+				u_list.get(uCL1_idx).set_block_cache_dirtyBit(false);
+			}
 		}
 		if(obj_cache.newL2.size() != 0 )
 		{
@@ -500,7 +511,7 @@ public class CacheInsert {
 		System.out.println("L1_ASSOC:              "	+	obj_cache.Assoc_L1);
 		System.out.println("L2_SIZE:               "	+	obj_cache.size_L2);
 		System.out.println("L2_ASSOC:              "	+	obj_cache.Assoc_L2);
-		System.out.println("REPLACEMENT POLICY:    "	+	(obj_cache.replacementPolicy == 0?"LRU":(obj_cache.replacementPolicy == 1?"Pseudo-LRU":"optimal")));
+		System.out.println("REPLACEMENT POLICY:    "	+	(obj_cache.replacementPolicy == 0?"LRU":(obj_cache.replacementPolicy == 1?"FIFO":"optimal")));
 		System.out.println("INCLUSION PROPERTY:    "	+	(obj_cache.inclusionProperty == 0?"non-inclusive":"inclusive"));
 		System.out.println("trace_file:            "	+	obj_cache.trace_File);
 		

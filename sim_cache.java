@@ -25,7 +25,7 @@ public class sim_cache {
 			/*
 			*  Replacement Policy
 			*  0: LRU
-			*  1: P-LRU (This will become FIFO)
+			*  1: FIFO
 			*  2: Optimal
 			*  Note: We need to implement FIFO
 			*/
