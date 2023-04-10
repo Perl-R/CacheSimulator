@@ -14,11 +14,14 @@ public class CacheInsert {
 	ArrayList<ArrayList<Integer>> blank_Idx_L1;
 	int row_Idx = 0;
 	Map<Integer, List<Node>> hex = new HashMap<>();
+	// Signature History Counter Table
+	// for use with SHiP
+	Map<Integer, Integer> SHCT = new HashMap<>();
 
-	final static String[] REPLACEMENT_POLICIES = {
+  final static String[] REPLACEMENT_POLICIES = {
 		"LRU", "FIFO", "optimal", "SHIP", "Hawkeye", "MockingJay", "Custom: LRU + Random"};
-
-	public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
+	
+  public CacheInsert(Cache cons_cache, Map<String, String> cons_SSMap, List<String> cons_SData) {
 		this.obj_cache = cons_cache;
 		this.SSMap = cons_SSMap;
 		this.SData = cons_SData;
@@ -115,6 +118,7 @@ public class CacheInsert {
 		}
 		row_Idx = getting_idx_L1(rL1_bits);
 		read_Miss_L1++;
+				
 		//if empty cache, include data also lru counter value to be decreased
 		if(rL1_list.size()< obj_cache.set_L1 )
 		{
@@ -147,6 +151,18 @@ public class CacheInsert {
 	void hit_Read_L1(String hRL1_tag, List<Block_Cache> hRL1_list, Block_Cache hRL1_c) {
 		//lru
 		int hRL1_val = hRL1_c.get_block_Cache_AccessCounter_LRU();
+		
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			hRL1_c.set_outcome(true);
+			// if the signature of this cache isn't in the cache add it
+			if (!SHCT.containsKey(hRL1_c.signature_m))
+				SHCT.put(hRL1_c.signature_m, 0);
+			
+			// increment SHCT[signature_m]
+			SHCT.replace(hRL1_c.signature_m, SHCT.get(hRL1_c.signature_m) + 1);			
+		}
+		
 		for(Block_Cache bc: hRL1_list)
 		{
 			if(bc.block_cache_tag.equals(hRL1_tag)) {
@@ -207,6 +223,18 @@ public class CacheInsert {
 
 		int hWL1_val = hWL1_c.get_block_Cache_AccessCounter_LRU();
 
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			hWL1_c.set_outcome(true);
+			// if the signature of this cache isn't in the cache add it
+			if (!SHCT.containsKey(hWL1_c.signature_m))
+				SHCT.put(hWL1_c.signature_m, 0);
+			
+			// increment SHCT[signature_m]
+			SHCT.replace(hWL1_c.signature_m, SHCT.get(hWL1_c.signature_m) + 1);			
+		}
+
+		
 		for(Block_Cache bc: hWL1_list)
 		{
 			if(bc.block_cache_tag.equals(hWL1_tag)) {
@@ -260,7 +288,19 @@ public class CacheInsert {
 	//hit read in L2
 	void hit_Read_L2(String hRL2_tag, List<Block_Cache> hRL2_list, Block_Cache hRL2_c) {
 		int hRL2_val = hRL2_c.get_block_Cache_AccessCounter_LRU();
+		
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			hRL2_c.set_outcome(true);
+			// if the signature of this cache isn't in the cache add it
+			if (!SHCT.containsKey(hRL2_c.signature_m))
+				SHCT.put(hRL2_c.signature_m, 0);
+			
+			// increment SHCT[signature_m]
+			SHCT.replace(hRL2_c.signature_m, SHCT.get(hRL2_c.signature_m) + 1);			
+		}
 
+		
 		for(Block_Cache bc: hRL2_list)
 		{
 			if(bc.block_cache_tag.equals(hRL2_tag)) {
@@ -307,7 +347,19 @@ public class CacheInsert {
 	//hit write in L2
 	void hit_Write_L2(String hWL2_tag, List<Block_Cache> hWL2_list, Block_Cache hWL2_c) {
 		int hWL2_val = hWL2_c.get_block_Cache_AccessCounter_LRU();
+		
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			hWL2_c.set_outcome(true);
+			// if the signature of this cache isn't in the cache add it
+			if (!SHCT.containsKey(hWL2_c.signature_m))
+				SHCT.put(hWL2_c.signature_m, 0);
+			
+			// increment SHCT[signature_m]
+			SHCT.replace(hWL2_c.signature_m, SHCT.get(hWL2_c.signature_m) + 1);			
+		}
 
+		
 		for(Block_Cache bc: hWL2_list)
 		{
 			if(bc.block_cache_tag.equals(hWL2_tag)) {
@@ -378,7 +430,8 @@ public class CacheInsert {
 				break;
 			}
 			// Perform LRU Replacement (0) by default
-			default:{
+      // SHiP uses LRU as a base so SHiP should also map to this part of the switch statement
+      default:{
 				for (int i = 0; i < u_list.size(); i++)
 				{
 					Block_Cache cb = u_list.get(i);
@@ -395,6 +448,7 @@ public class CacheInsert {
 			}
 		}
 		Block_Cache evicted = u_list.remove(uCL1_idx);
+				
 		if(evicted.is_block_cache_dirtyBit())
 		{
 			write_backs_L1++;
@@ -410,6 +464,41 @@ public class CacheInsert {
 				writing_L2(evicted.get_block_cache_data(), SSMap.get(evicted.get_block_cache_data()));
 
 			reading_L2(u_data, SSMap.get(u_data), false, null);
+		}
+		
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			// Initialize SHCT[evicted.signature_m] if you haven't already
+			if (!SHCT.containsKey(evicted.signature_m)) {
+				SHCT.put(evicted.signature_m, 0);
+			}
+			
+			// if evicted.outcome == false
+			if (!evicted.get_outcome()) {
+				// decrement SHCT[signature_m]
+				SHCT.put(evicted.signature_m, SHCT.get(evicted.signature_m) - 1);
+			}
+			Block_Cache newCache = u_list.get(uCL1_idx);
+			
+			newCache.set_outcome(false);
+			
+			// Initialize SHCT[newCache.signature_m] if you haven't already
+			if (!SHCT.containsKey(newCache.signature_m)) {
+				SHCT.put(newCache.signature_m, 0);
+			}
+			
+			if (SHCT.get(newCache.signature_m) == 0) {
+				// predict distant re-reference
+				// For LRU this means make the counter 0 and increment all other LRU counters
+				for (Block_Cache cb : u_list) {
+					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
+				}
+				u_list.get(uCL1_idx).set_block_Cache_AccessCounter_OPT(0);
+			}
+			else {
+				// predict intermediate re-reference
+				// for LRU this means proceed as normal
+			}
 		}
 	}
 
@@ -535,6 +624,44 @@ public class CacheInsert {
 		{
 			evict_L1(got_evict);
 		}
+		
+		// if using SHiP
+		if (obj_cache.replacementPolicy == 3) {
+			// Initialize SHCT[evicted.signature_m] if you haven't already
+			if (!SHCT.containsKey(got_evict.signature_m)) {
+				SHCT.put(got_evict.signature_m, 0);
+			}
+			
+			// if evicted.outcome == false
+			if (!got_evict.get_outcome()) {
+				// decrement SHCT[signature_m]
+				SHCT.put(got_evict.signature_m, SHCT.get(got_evict.signature_m) - 1);
+			}
+			Block_Cache newCache = UCL2_list.get(idx);
+			
+			newCache.set_outcome(false);
+			
+			// Initialize SHCT[newCache.signature_m] if you haven't already
+			if (!SHCT.containsKey(newCache.signature_m)) {
+				SHCT.put(newCache.signature_m, 0);
+			}
+
+			
+			if (SHCT.get(newCache.signature_m) == 0) {
+				// predict distant re-reference
+				// For LRU this means make the counter 0 and increment all other LRU counters
+				for (Block_Cache cb : UCL2_list) {
+					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
+				}
+				UCL2_list.get(idx).set_block_Cache_AccessCounter_OPT(0);
+			}
+			else {
+				// predict intermediate re-reference
+				// for LRU this means proceed as normal
+			}
+		}
+
+		
 	}
 
 	void evict_L1(Block_Cache evicted) {
@@ -563,7 +690,23 @@ public class CacheInsert {
 			}
 		}
 	}
-
+	
+	String replacementPolicyToString(int policy) {
+		switch (policy) {				
+		case 0:
+			return "LRU";
+		case 1:
+			return "Psudo-LRU";
+		case 2:
+			return "optimal";
+		case 3:
+			return "SHiP";
+				
+		default:
+			return "Invalid replacement Policy";
+		}
+	}
+	
 	void print_Cache() {
 		System.out.println("===== Simulator configuration =====");
 		System.out.println("BLOCKSIZE:             "	+	obj_cache.blockSize);
