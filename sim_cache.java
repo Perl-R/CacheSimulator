@@ -27,6 +27,10 @@ public class sim_cache {
 			*  0: LRU
 			*  1: FIFO
 			*  2: Optimal
+			*  3: SHIP (In Progress)
+			*  4: Hawkeye (In Progress)
+			*  5: MockingJay (In Progress)
+			*  6: Custom (LRU + Random)
 			*  Note: We need to implement FIFO
 			*/
 			int replacement_policy = Integer.parseInt(args[6]);
