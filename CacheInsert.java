@@ -562,7 +562,7 @@ public class CacheInsert {
 		// TODO: This will be the case for FIFO
 		if (obj_cache.replacementPolicy == 1)
 		{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+			idx = ev_idx_FIFO;
 		}
 		else if (obj_cache.replacementPolicy == 2) {
 			idx = getting_eviction_idx_opt(UCL2_list);
@@ -626,10 +626,20 @@ public class CacheInsert {
 		{
 			write_backs_L2++;
 		}
-		UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		if (obj_cache.replacementPolicy == 1) {
+			UCL2_list.add(idx + 1, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		}
+		else {
+			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		}
 		if(UCL2_read)
 		{
-			UCL2_list.get(idx).set_block_cache_dirtyBit(false);
+			if (obj_cache.replacementPolicy == 1) {
+				UCL2_list.get(idx + 1).set_block_cache_dirtyBit(false);
+			}
+			else {
+				UCL2_list.get(idx).set_block_cache_dirtyBit(false);
+			}
 		}
 		if(obj_cache.inclusionProperty == 1)
 		{
