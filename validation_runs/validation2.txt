@@ -10,7 +10,7 @@ trace_file:            gcc_trace.txt
 ===== L1 contents =====
 Set     0:      20028d D  20018a    
 Set     1:      20028d D  20028e D  
-Set     2:      20028d D  2001c1 D  
+Set     2:      20028d D  2001c1 D 
 Set     3:      20028d D  20013b    
 Set     4:      200223 D  20028d    
 Set     5:      2001c1    200149    

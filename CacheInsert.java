@@ -13,7 +13,6 @@ public class CacheInsert {
 	ArrayList<Integer> blank_Flag_L1;
 	ArrayList<ArrayList<Integer>> blank_Idx_L1;
 	int row_Idx = 0;
-	int ev_idx_FIFO = 0;
 	Map<Integer, List<Node>> hex = new HashMap<>();
 	// Signature History Counter Table
 	// for use with SHiP
@@ -381,8 +380,7 @@ public class CacheInsert {
 		{
 			// TODO: This will become the case for FIFO
 			case 1:{
-				uCL1_idx = ev_idx_FIFO;
-//				ev_idx_FIFO = (ev_idx_FIFO + 1) % u_list.size();
+				uCL1_idx = 0;
 				break;
 			}
 			case 2:{
@@ -456,7 +454,7 @@ public class CacheInsert {
 			write_backs_L1++;
 		}
 		if (obj_cache.replacementPolicy == 1) {
-			u_list.add(uCL1_idx + 1, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+			u_list.add(new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
 		}
 		else {
 			u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
@@ -464,7 +462,7 @@ public class CacheInsert {
 		if(u_read)
 		{
 			if (obj_cache.replacementPolicy == 1) {
-				u_list.get(uCL1_idx + 1).set_block_cache_dirtyBit(false);
+				u_list.get(1).set_block_cache_dirtyBit(false);
 			} else {
 				u_list.get(uCL1_idx).set_block_cache_dirtyBit(false);
 			}
@@ -562,7 +560,7 @@ public class CacheInsert {
 		// TODO: This will be the case for FIFO
 		if (obj_cache.replacementPolicy == 1)
 		{
-			idx = ev_idx_FIFO;
+			idx = 0;
 		}
 		else if (obj_cache.replacementPolicy == 2) {
 			idx = getting_eviction_idx_opt(UCL2_list);
@@ -627,7 +625,7 @@ public class CacheInsert {
 			write_backs_L2++;
 		}
 		if (obj_cache.replacementPolicy == 1) {
-			UCL2_list.add(idx + 1, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+			UCL2_list.add(new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
 		}
 		else {
 			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
@@ -635,7 +633,7 @@ public class CacheInsert {
 		if(UCL2_read)
 		{
 			if (obj_cache.replacementPolicy == 1) {
-				UCL2_list.get(idx + 1).set_block_cache_dirtyBit(false);
+				UCL2_list.get(1).set_block_cache_dirtyBit(false);
 			}
 			else {
 				UCL2_list.get(idx).set_block_cache_dirtyBit(false);
