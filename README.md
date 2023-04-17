@@ -9,5 +9,7 @@ CDA5106 - Cache Design Project (Spring 23)
 
 ## Replacement Policies:
 * LRU
-* FIFO (In Progress)
+* FIFO
 * Optimal
+* SHiP
+* LRU + Random Replacement
