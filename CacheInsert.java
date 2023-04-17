@@ -378,9 +378,19 @@ public class CacheInsert {
 		int uCL1_idx = 0;
 		switch(obj_cache.replacementPolicy)
 		{
-			// TODO: This will become the case for FIFO
+			// FIFO
 			case 1:{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+				int target_index = 0;
+				int first_in = Integer.MAX_VALUE;
+				// Loop to find the first in
+				for (int i = 0; i < u_list.size(); i++)
+				{
+					if (u_list.get(i).fifo_position < first_in) {
+						first_in = u_list.get(i).fifo_position;
+						target_index = i;
+					}
+				}
+				uCL1_idx = target_index;
 				break;
 			}
 			case 2:{
@@ -548,10 +558,20 @@ public class CacheInsert {
 	//L2 replacement policy
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
 		int idx = 0;
-		// TODO: This will be the case for FIFO
+		// FIFO
 		if (obj_cache.replacementPolicy == 1)
 		{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+			int target_index = 0;
+			int first_in = Integer.MAX_VALUE;
+			// Loop to find the first in
+			for (int i = 0; i < UCL2_list.size(); i++)
+			{
+				if (UCL2_list.get(i).fifo_position < first_in) {
+					first_in = UCL2_list.get(i).fifo_position;
+					target_index = i;
+				}
+			}
+			idx = target_index;
 		}
 		else if (obj_cache.replacementPolicy == 2) {
 			idx = getting_eviction_idx_opt(UCL2_list);
@@ -610,6 +630,8 @@ public class CacheInsert {
 				}
 			}
 		}
+
+		// Evict the selected index
 		Block_Cache got_evict = UCL2_list.remove(idx);
 		if(got_evict.is_block_cache_dirtyBit())
 		{

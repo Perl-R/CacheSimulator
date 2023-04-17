@@ -10,6 +10,10 @@ class Block_Cache {
 	boolean outcome;
 	int signature_m;
 
+	// For FIFO
+	static int fifo_counter = 0; // Each time we add a new item, this static counter will increment (to maintain order)
+	int fifo_position; // This is the position counter of the current block
+
 	public Block_Cache(String cons_block_cache_data, String cons_block_cache_tag, int cons_block_Cache_AccessCounter_LRU, boolean cons_block_cache_dirtyBit) {
 		super();
 		this.block_cache_data = cons_block_cache_data;
@@ -20,6 +24,7 @@ class Block_Cache {
 		// SHiP
 		outcome = false;
 		signature_m = this.hashCode();
+		this.fifo_position = fifo_counter++; // FIFO
 	}
 	public void set_outcome(boolean truthValue) {
 		this.outcome = truthValue;
