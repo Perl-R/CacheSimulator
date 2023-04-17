@@ -49,13 +49,24 @@ public class CacheInsert {
 	//Get index from L1 of the address
 	int getting_idx_L1(String str_idx_L1)
 	{
-		return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1+ obj_cache.idx_L1),2);
+		try {
+			return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1+ obj_cache.idx_L1),2);
+		}
+		// Catch for the Fully Associative Case
+		catch (Exception e){
+			return 0;
+		}
 	}
 
 	//Get index from L2 of the address
 	int getting_idx_L2(String str_idx_L2)
 	{
-		return Integer.parseInt(str_idx_L2.substring(obj_cache.tag_L2, obj_cache.tag_L2+ obj_cache.idx_L2),2);
+		try{
+			return Integer.parseInt(str_idx_L2.substring(obj_cache.tag_L2, obj_cache.tag_L2+ obj_cache.idx_L2),2);
+		}
+		catch (Exception e){
+			return 0;
+		}
 	}
 
 	String getting_tag_L1(String str_tag_L1)
