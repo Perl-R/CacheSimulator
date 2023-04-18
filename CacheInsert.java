@@ -370,7 +370,17 @@ public class CacheInsert {
 				bc.set_block_Cache_AccessCounter_LRU(bc.get_block_Cache_AccessCounter_LRU()-1);
 				bc.set_block_Cache_AccessCounter_OPT(bc.block_Cache_AccessCounter_OPT()+1);
 			}
-			rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L2 -1 , false));
+
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(rL1_tag)){
+				RDP.put(rL1_tag, def_RDP);
+			}
+			if (!LineTimeStamps.containsKey(rL1_tag)){
+				LineTimeStamps.put(rL1_tag, tStamp);
+			}
+
+			rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L2 -1 , false, (int) (tStamp + def_RDP)));
 
 		}
 		else //using replacement policy
@@ -383,6 +393,21 @@ public class CacheInsert {
 	void hit_Read_L2(String hRL2_tag, List<Block_Cache> hRL2_list, Block_Cache hRL2_c) {
 		int hRL2_val = hRL2_c.get_block_Cache_AccessCounter_LRU();
 		
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hRL2_tag);
+			int last_timestamp = LineTimeStamps.get(hRL2_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hRL2_tag, temporal_diff(line_RDP, last_timestamp));
+				hRL2_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hRL2_tag, time_elapsed);
+				hRL2_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hRL2_tag, curr_timestamp);
+		}
+
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			hRL2_c.set_outcome(true);
@@ -430,7 +455,17 @@ public class CacheInsert {
 				bc.set_block_Cache_AccessCounter_LRU(bc.get_block_Cache_AccessCounter_LRU()-1);
 				bc.set_block_Cache_AccessCounter_OPT(bc.block_Cache_AccessCounter_OPT()+1);
 			}
-			wL2_list.add(new Block_Cache(wL2_data, wL2_tag, obj_cache.set_L2 -1 , true));
+
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(wL2_tag)){
+				RDP.put(wL2_tag, def_RDP);
+			}
+			if (!LineTimeStamps.containsKey(wL2_tag)){
+				LineTimeStamps.put(wL2_tag, tStamp);
+			}
+
+			wL2_list.add(new Block_Cache(wL2_data, wL2_tag, obj_cache.set_L2 -1 , true, (int) (tStamp + def_RDP)));
 		}
 		else //applying replacement policy
 		{
@@ -442,6 +477,22 @@ public class CacheInsert {
 	void hit_Write_L2(String hWL2_tag, List<Block_Cache> hWL2_list, Block_Cache hWL2_c) {
 		int hWL2_val = hWL2_c.get_block_Cache_AccessCounter_LRU();
 		
+		//Mockingjay
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hWL2_tag);
+			int last_timestamp = LineTimeStamps.get(hWL2_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp increment ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hWL2_tag, temporal_diff(line_RDP, last_timestamp));
+				hWL2_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hWL2_tag, time_elapsed);
+				hWL2_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hWL2_tag, curr_timestamp);
+		}
+
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			hWL2_c.set_outcome(true);
@@ -718,6 +769,19 @@ public class CacheInsert {
 				int rand_index = rand.nextInt(upperbound);
 				idx = rand_index;
 			}
+			else if (obj_cache.replacementPolicy == 5) {
+				int max_eta = 0;
+				for (int i = 0; i < UCL2_list.size(); i++)
+				{
+					Block_Cache cb = UCL2_list.get(i);
+					int etaVal = cb.get_eta();
+					if(etaVal > max_eta)
+					{
+						idx = i;
+						max_eta = etaVal;
+					}
+				}
+			}
 			// Otherwise we perform standard LRU
 			else 
 			{
@@ -758,7 +822,19 @@ public class CacheInsert {
 		{
 			write_backs_L2++;
 		}
-		UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		if (obj_cache.replacementPolicy == 5){
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(UCL2_tag)){
+				RDP.put(UCL2_tag, def_RDP);
+			}
+			LineTimeStamps.put(UCL2_tag, tStamp);
+
+			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true, (int) (tStamp + def_RDP) ));
+		}
+		else {
+			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		}
 		if(UCL2_read)
 		{
 			UCL2_list.get(idx).set_block_cache_dirtyBit(false);
