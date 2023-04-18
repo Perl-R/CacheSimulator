@@ -10,6 +10,9 @@ class Block_Cache {
 	boolean outcome;
 	int signature_m;
 
+	// for MockingJay
+	int eta;
+
 	// For FIFO
 	static int fifo_counter = 0; // Each time we add a new item, this static counter will increment (to maintain order)
 	int fifo_position; // This is the position counter of the current block
@@ -25,6 +28,27 @@ class Block_Cache {
 		outcome = false;
 		signature_m = this.hashCode();
 		this.fifo_position = fifo_counter++; // FIFO
+	}
+
+	public Block_Cache(String cons_block_cache_data, String cons_block_cache_tag, int cons_block_Cache_AccessCounter_LRU, boolean cons_block_cache_dirtyBit, int cons_eta) {
+		super();
+		this.block_cache_data = cons_block_cache_data;
+		this.block_cache_tag = cons_block_cache_tag;
+		block_Cache_AccessCounter_LRU = cons_block_Cache_AccessCounter_LRU;
+		this.block_cache_dirtyBit = cons_block_cache_dirtyBit;
+		block_Cache_AccessCounter_OPT = 0;
+		// SHiP
+		outcome = false;
+		signature_m = this.hashCode();
+		this.fifo_position = fifo_counter++; // FIFO
+		// MockingJay
+		this.eta = cons_eta;
+	}
+	public int get_eta() {
+		return eta;
+	}
+	public void set_eta(int etaValue) {
+		this.eta = etaValue;
 	}
 	public void set_outcome(boolean truthValue) {
 		this.outcome = truthValue;
