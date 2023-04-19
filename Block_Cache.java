@@ -39,7 +39,7 @@ class Block_Cache {
 		block_Cache_AccessCounter_OPT = 0;
 		// SHiP
 		outcome = false;
-		signature_m = this.hashCode();
+		signature_m = cons_block_cache_tag + cons_block_cache_data;
 		this.fifo_position = fifo_counter++; // FIFO
 		// MockingJay
 		this.eta = cons_eta;
