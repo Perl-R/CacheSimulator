@@ -18,6 +18,12 @@ public class CacheInsert {
 	// for use with SHiP
 	Map<String, Integer> SHCT = new HashMap<>();
 
+	// for MockingJay
+	Map<String, Integer> RDP = new HashMap<>(); //Hash: Reuse Distance => {Cache Line Hash: Reuse Distance}
+	Map<String, Integer> LineTimeStamps = new HashMap<>(); //Hash: TimeStamp => {Set Hash: TimeStamp}
+	int INF_RD = 127; // INF_RD
+	int TIMESTAMP_BITS  = 8; // Timestamp
+	double TEMP_DIFFERENCE = 1.0/16.0;
   final static String[] REPLACEMENT_POLICIES = {
 		"LRU", "FIFO", "optimal", "SHIP", "Hawkeye", "MockingJay", "Custom: LRU + Random"};
 	
@@ -49,13 +55,24 @@ public class CacheInsert {
 	//Get index from L1 of the address
 	int getting_idx_L1(String str_idx_L1)
 	{
-		return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1 + obj_cache.idx_L1),2);
+		try {
+			return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1+ obj_cache.idx_L1),2);
+		}
+		// Catch for the Fully Associative Case
+		catch (Exception e){
+			return 0;
+		}
 	}
 
 	//Get index from L2 of the address
 	int getting_idx_L2(String str_idx_L2)
 	{
-		return Integer.parseInt(str_idx_L2.substring(obj_cache.tag_L2, obj_cache.tag_L2+ obj_cache.idx_L2),2);
+		try{
+			return Integer.parseInt(str_idx_L2.substring(obj_cache.tag_L2, obj_cache.tag_L2+ obj_cache.idx_L2),2);
+		}
+		catch (Exception e){
+			return 0;
+		}
 	}
 
 	String getting_tag_L1(String str_tag_L1)
@@ -103,6 +120,12 @@ public class CacheInsert {
 		
 		print_Cache();
 	}
+	// Mockingjay Timestamp
+	int get_tstamp() {
+	  long tStamp = System.currentTimeMillis();
+	  int eightBitTimestamp = (int) (tStamp % 256);
+	  return eightBitTimestamp;
+	}
 
 	//reading L1 cache
 	void reading_L1(String rL1_data, String rL1_bits) {
@@ -134,7 +157,16 @@ public class CacheInsert {
 			}
 			else
 			{
-				rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false));
+				int def_RDP = INF_RD + 1;
+				int tStamp = get_tstamp();
+				if (!RDP.containsKey(rL1_tag)){
+					RDP.put(rL1_tag, def_RDP);
+				}
+				if (!LineTimeStamps.containsKey(rL1_tag)){
+					LineTimeStamps.put(rL1_tag, tStamp);
+				}
+
+				rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L1 -1 , false, (int) (tStamp + def_RDP)));
 			}
 			if(obj_cache.newL2.size() != 0)
 			{
@@ -147,11 +179,56 @@ public class CacheInsert {
 		}
 	}
 
+	//Mockingjay
+	int increment_timestamp(int input) {
+		input++;
+		input = input % (1 << TIMESTAMP_BITS);
+		return input;
+	}
+	int time_elapsed (int set_time, int block_time) {
+	  if (set_time >= block_time){
+		  return set_time - block_time;
+	  }
+	  set_time += 1 << TIMESTAMP_BITS;
+	  return set_time - block_time;
+	}
+
+	int temporal_diff(int init, int sample) {
+		if (sample > init) {
+			int diff = sample - init;
+			diff = (int) (diff * TEMP_DIFFERENCE);
+			diff = Math.min(1, diff);
+			return Math.min(init + diff, INF_RD);
+		} else if (sample < init) {
+			int diff = init - sample;
+			diff = (int) (diff * TEMP_DIFFERENCE);
+			diff = Math.min(1, diff);
+			return Math.max(init - diff, 0);
+		} else {
+			return init;
+		}
+	}
+
 	//hit in read in L1
 	void hit_Read_L1(String hRL1_tag, List<Block_Cache> hRL1_list, Block_Cache hRL1_c) {
 		//lru
 		int hRL1_val = hRL1_c.get_block_Cache_AccessCounter_LRU();
 		
+		//Mockingjay
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hRL1_tag);
+			int last_timestamp = LineTimeStamps.get(hRL1_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hRL1_tag, temporal_diff(line_RDP, last_timestamp));
+				hRL1_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hRL1_tag, time_elapsed);
+				hRL1_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hRL1_tag, curr_timestamp);
+		}
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			hRL1_c.set_outcome(true);
@@ -205,7 +282,16 @@ public class CacheInsert {
 			}
 			else
 			{
-				wL1_list.add(new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true));
+				int def_RDP = INF_RD + 1;
+				int tStamp = get_tstamp();
+				if (!RDP.containsKey(wL1_tag)){
+					RDP.put(wL1_tag, def_RDP);
+				}
+				if (!LineTimeStamps.containsKey(wL1_tag)){
+					LineTimeStamps.put(wL1_tag, tStamp);
+				}
+
+				wL1_list.add(new Block_Cache(wL1_data, wL1_tag, obj_cache.set_L1 -1 , true, (int) (tStamp + def_RDP)));
 			}
 			if(obj_cache.newL2.size() != 0)
 			{
@@ -222,6 +308,22 @@ public class CacheInsert {
 	void hit_Write_L1(String hWL1_tag, List<Block_Cache> hWL1_list, Block_Cache hWL1_c) {
 
 		int hWL1_val = hWL1_c.get_block_Cache_AccessCounter_LRU();
+
+		//Mockingjay
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hWL1_tag);
+			int last_timestamp = LineTimeStamps.get(hWL1_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hWL1_tag, temporal_diff(line_RDP, last_timestamp));
+				hWL1_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hWL1_tag, time_elapsed);
+				hWL1_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hWL1_tag, curr_timestamp);
+		}
 
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
@@ -276,7 +378,17 @@ public class CacheInsert {
 				bc.set_block_Cache_AccessCounter_LRU(bc.get_block_Cache_AccessCounter_LRU()-1);
 				bc.set_block_Cache_AccessCounter_OPT(bc.block_Cache_AccessCounter_OPT()+1);
 			}
-			rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L2 -1 , false));
+
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(rL1_tag)){
+				RDP.put(rL1_tag, def_RDP);
+			}
+			if (!LineTimeStamps.containsKey(rL1_tag)){
+				LineTimeStamps.put(rL1_tag, tStamp);
+			}
+
+			rL1_list.add(new Block_Cache(rL1_data, rL1_tag, obj_cache.set_L2 -1 , false, (int) (tStamp + def_RDP)));
 
 		}
 		else //using replacement policy
@@ -289,6 +401,21 @@ public class CacheInsert {
 	void hit_Read_L2(String hRL2_tag, List<Block_Cache> hRL2_list, Block_Cache hRL2_c) {
 		int hRL2_val = hRL2_c.get_block_Cache_AccessCounter_LRU();
 		
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hRL2_tag);
+			int last_timestamp = LineTimeStamps.get(hRL2_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hRL2_tag, temporal_diff(line_RDP, last_timestamp));
+				hRL2_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hRL2_tag, time_elapsed);
+				hRL2_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hRL2_tag, curr_timestamp);
+		}
+
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			hRL2_c.set_outcome(true);
@@ -299,7 +426,6 @@ public class CacheInsert {
 			// increment SHCT[signature_m]
 			SHCT.replace(hRL2_c.signature_m, SHCT.get(hRL2_c.signature_m) + 1);			
 		}
-
 		
 		for(Block_Cache bc: hRL2_list)
 		{
@@ -336,7 +462,17 @@ public class CacheInsert {
 				bc.set_block_Cache_AccessCounter_LRU(bc.get_block_Cache_AccessCounter_LRU()-1);
 				bc.set_block_Cache_AccessCounter_OPT(bc.block_Cache_AccessCounter_OPT()+1);
 			}
-			wL2_list.add(new Block_Cache(wL2_data, wL2_tag, obj_cache.set_L2 -1 , true));
+
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(wL2_tag)){
+				RDP.put(wL2_tag, def_RDP);
+			}
+			if (!LineTimeStamps.containsKey(wL2_tag)){
+				LineTimeStamps.put(wL2_tag, tStamp);
+			}
+
+			wL2_list.add(new Block_Cache(wL2_data, wL2_tag, obj_cache.set_L2 -1 , true, (int) (tStamp + def_RDP)));
 		}
 		else //applying replacement policy
 		{
@@ -348,6 +484,22 @@ public class CacheInsert {
 	void hit_Write_L2(String hWL2_tag, List<Block_Cache> hWL2_list, Block_Cache hWL2_c) {
 		int hWL2_val = hWL2_c.get_block_Cache_AccessCounter_LRU();
 		
+		//Mockingjay
+		if (obj_cache.replacementPolicy == 5){
+			int line_RDP = RDP.get(hWL2_tag);
+			int last_timestamp = LineTimeStamps.get(hWL2_tag);
+			int curr_timestamp = get_tstamp();
+			int time_elapsed = time_elapsed(last_timestamp, curr_timestamp); //edit curr_timestamp increment ?
+			if (time_elapsed > INF_RD){
+				RDP.put(hWL2_tag, temporal_diff(line_RDP, last_timestamp));
+				hWL2_c.set_eta( (int) (curr_timestamp + temporal_diff(line_RDP, last_timestamp)));
+			} else {
+				RDP.put(hWL2_tag, time_elapsed);
+				hWL2_c.set_eta( (int) (curr_timestamp + time_elapsed));
+			}
+			LineTimeStamps.put(hWL2_tag, curr_timestamp);
+		}
+
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			hWL2_c.set_outcome(true);
@@ -358,7 +510,6 @@ public class CacheInsert {
 			// increment SHCT[signature_m]
 			SHCT.replace(hWL2_c.signature_m, SHCT.get(hWL2_c.signature_m) + 1);			
 		}
-
 		
 		for(Block_Cache bc: hWL2_list)
 		{
@@ -378,9 +529,19 @@ public class CacheInsert {
 		int uCL1_idx = 0;
 		switch(obj_cache.replacementPolicy)
 		{
-			// TODO: This will become the case for FIFO
+			// FIFO
 			case 1:{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+				int target_index = 0;
+				int first_in = Integer.MAX_VALUE;
+				// Loop to find the first in
+				for (int i = 0; i < u_list.size(); i++)
+				{
+					if (u_list.get(i).fifo_position < first_in) {
+						first_in = u_list.get(i).fifo_position;
+						target_index = i;
+					}
+				}
+				uCL1_idx = target_index;
 				break;
 			}
 			case 2:{
@@ -398,6 +559,20 @@ public class CacheInsert {
 			 * Custom LRU + Random Replacement Case
 			 * When LRU Misses Exceed a Threshold, we resort to Random Replacement
 			 */
+			// MockingJay
+			case 5:{
+				int max_eta = 0;
+				for (int i = 0; i < u_list.size(); i++)
+				{
+					Block_Cache cb = u_list.get(i);
+					int etaVal = cb.get_eta();
+					if(etaVal > max_eta)
+					{
+						uCL1_idx = i;
+						max_eta = etaVal;
+					}
+				}
+			}
 			case 6:{
 				int min_misses = obj_cache.size_L1;
 				double miss_threshold = 0.2;
@@ -453,7 +628,20 @@ public class CacheInsert {
 		{
 			write_backs_L1++;
 		}
-		u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+		if (obj_cache.replacementPolicy == 5){
+
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(u_tag)){
+				RDP.put(u_tag, def_RDP);
+			}
+			LineTimeStamps.put(u_tag, tStamp);
+
+			u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true, (int) (tStamp + def_RDP) ));
+
+		} else {
+			u_list.add(uCL1_idx, new Block_Cache(u_data, u_tag, obj_cache.set_L1 -1 , true));
+		}
 		if(u_read)
 		{
 			u_list.get(uCL1_idx).set_block_cache_dirtyBit(false);
@@ -550,10 +738,20 @@ public class CacheInsert {
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
 		System.out.println("here");
 		int idx = 0;
-		// TODO: This will be the case for FIFO
+		// FIFO
 		if (obj_cache.replacementPolicy == 1)
 		{
-				// uCL1_idx = getting_eviction_idx_fifo() 
+			int target_index = 0;
+			int first_in = Integer.MAX_VALUE;
+			// Loop to find the first in
+			for (int i = 0; i < UCL2_list.size(); i++)
+			{
+				if (UCL2_list.get(i).fifo_position < first_in) {
+					first_in = UCL2_list.get(i).fifo_position;
+					target_index = i;
+				}
+			}
+			idx = target_index;
 		}
 		else if (obj_cache.replacementPolicy == 2) {
 			idx = getting_eviction_idx_opt(UCL2_list);
@@ -578,6 +776,19 @@ public class CacheInsert {
 				int upperbound = UCL2_list.size();					
 				int rand_index = rand.nextInt(upperbound);
 				idx = rand_index;
+			}
+			else if (obj_cache.replacementPolicy == 5) {
+				int max_eta = 0;
+				for (int i = 0; i < UCL2_list.size(); i++)
+				{
+					Block_Cache cb = UCL2_list.get(i);
+					int etaVal = cb.get_eta();
+					if(etaVal > max_eta)
+					{
+						idx = i;
+						max_eta = etaVal;
+					}
+				}
 			}
 			// Otherwise we perform standard LRU
 			else 
@@ -612,12 +823,26 @@ public class CacheInsert {
 				}
 			}
 		}
+
+		// Evict the selected index
 		Block_Cache got_evict = UCL2_list.remove(idx);
 		if(got_evict.is_block_cache_dirtyBit())
 		{
 			write_backs_L2++;
 		}
-		UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		if (obj_cache.replacementPolicy == 5){
+			int def_RDP = INF_RD + 1;
+			int tStamp = get_tstamp();
+			if (!RDP.containsKey(UCL2_tag)){
+				RDP.put(UCL2_tag, def_RDP);
+			}
+			LineTimeStamps.put(UCL2_tag, tStamp);
+
+			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true, (int) (tStamp + def_RDP) ));
+		}
+		else {
+			UCL2_list.add(idx, new Block_Cache(UCL2_data, UCL2_tag, obj_cache.set_L2 -1 , true));
+		}
 		if(UCL2_read)
 		{
 			UCL2_list.get(idx).set_block_cache_dirtyBit(false);
@@ -627,7 +852,8 @@ public class CacheInsert {
 		{
 			evict_L1(got_evict);
 		}
-		// if using SHiP
+
+    // if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			// Initialize SHCT[evicted.signature_m] if you haven't already
 			if (!SHCT.containsKey(got_evict.signature_m)) {
