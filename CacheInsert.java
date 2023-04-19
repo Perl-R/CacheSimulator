@@ -16,7 +16,7 @@ public class CacheInsert {
 	Map<Integer, List<Node>> hex = new HashMap<>();
 	// Signature History Counter Table
 	// for use with SHiP
-	Map<Integer, Integer> SHCT = new HashMap<>();
+	Map<String, Integer> SHCT = new HashMap<>();
 
   final static String[] REPLACEMENT_POLICIES = {
 		"LRU", "FIFO", "optimal", "SHIP", "Hawkeye", "MockingJay", "Custom: LRU + Random"};
@@ -49,7 +49,7 @@ public class CacheInsert {
 	//Get index from L1 of the address
 	int getting_idx_L1(String str_idx_L1)
 	{
-		return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1+ obj_cache.idx_L1),2);
+		return Integer.parseInt(str_idx_L1.substring(obj_cache.tag_L1, obj_cache.tag_L1 + obj_cache.idx_L1),2);
 	}
 
 	//Get index from L2 of the address
@@ -491,9 +491,10 @@ public class CacheInsert {
 				// predict distant re-reference
 				// For LRU this means make the counter 0 and increment all other LRU counters
 				for (Block_Cache cb : u_list) {
-					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
+					cb.set_block_Cache_AccessCounter_OPT(cb.get_block_Cache_AccessCounter_LRU() + 1);
 				}
-				u_list.get(uCL1_idx).set_block_Cache_AccessCounter_OPT(0);
+				newCache.set_block_Cache_AccessCounter_LRU(0);
+				u_list.set(uCL1_idx, newCache);
 			}
 			else {
 				// predict intermediate re-reference
@@ -547,6 +548,7 @@ public class CacheInsert {
 
 	//L2 replacement policy
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
+		System.out.println("here");
 		int idx = 0;
 		// TODO: This will be the case for FIFO
 		if (obj_cache.replacementPolicy == 1)
@@ -620,11 +622,11 @@ public class CacheInsert {
 		{
 			UCL2_list.get(idx).set_block_cache_dirtyBit(false);
 		}
+
 		if(obj_cache.inclusionProperty == 1)
 		{
 			evict_L1(got_evict);
 		}
-		
 		// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			// Initialize SHCT[evicted.signature_m] if you haven't already
@@ -651,9 +653,10 @@ public class CacheInsert {
 				// predict distant re-reference
 				// For LRU this means make the counter 0 and increment all other LRU counters
 				for (Block_Cache cb : UCL2_list) {
-					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
+					cb.set_block_Cache_AccessCounter_LRU(cb.get_block_Cache_AccessCounter_LRU() + 1);
 				}
-				UCL2_list.get(idx).set_block_Cache_AccessCounter_OPT(0);
+				newCache.set_block_Cache_AccessCounter_LRU(0);
+				UCL2_list.set(idx, newCache);
 			}
 			else {
 				// predict intermediate re-reference
