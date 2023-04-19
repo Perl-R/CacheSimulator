@@ -8,7 +8,7 @@ class Block_Cache {
 	int block_Cache_AccessCounter_LRU, block_Cache_AccessCounter_OPT;
 	// for SHiP
 	boolean outcome;
-	int signature_m;
+	String signature_m;
 
 	// for MockingJay
 	int eta;
@@ -26,7 +26,7 @@ class Block_Cache {
 		block_Cache_AccessCounter_OPT = 0;
 		// SHiP
 		outcome = false;
-		signature_m = this.hashCode();
+		signature_m = cons_block_cache_tag + cons_block_cache_data;
 		this.fifo_position = fifo_counter++; // FIFO
 	}
 
@@ -56,10 +56,10 @@ class Block_Cache {
 	public boolean get_outcome() {
 		return outcome;
 	}
-	public void set_signature_m(int i) {
+	public void set_signature_m(String i) {
 		this.signature_m = i;
 	}
-	public int get_signature_m() {
+	public String get_signature_m() {
 		return signature_m;
 	}
 	public String get_block_cache_data() {
