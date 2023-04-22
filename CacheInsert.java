@@ -24,6 +24,14 @@ public class CacheInsert {
 	int INF_RD = 127; // INF_RD
 	int TIMESTAMP_BITS  = 8; // Timestamp
 	double TEMP_DIFFERENCE = 1.0/16.0;
+
+	//for Hawkeye
+	Map<String, Integer> LivenessInterval = new HashMap<>();
+	List<Integer> counter;
+    List<String> blk;
+
+
+
   final static String[] REPLACEMENT_POLICIES = {
 		"LRU", "FIFO", "optimal", "SHIP", "Hawkeye", "MockingJay", "Custom: LRU + Random"};
 	
@@ -43,6 +51,11 @@ public class CacheInsert {
 		write_backs_L2 = 0;
 		blank_Idx_L1 = new ArrayList<ArrayList<Integer>>(obj_cache.size_L1 / obj_cache.blockSize);
 		blank_Flag_L1 = new ArrayList<Integer>(obj_cache.size_L1 / obj_cache.blockSize);
+		//AC =  new ArrayList<>(obj_cache.blockSize);
+
+		counter= new ArrayList<Integer>();
+		blk= new ArrayList<String>();
+
 		
 		for (int i = 0; i < obj_cache.size_L1 / obj_cache.blockSize; i++)
 		{
@@ -193,6 +206,84 @@ public class CacheInsert {
 	  return set_time - block_time;
 	}
 
+	// for Hawkeye (age allRRIP of blocks when it OPT predicts miss) -until 7 is reached
+	void age_all_lines(List<Block_Cache> u_List){
+		for(int i=0;i<u_List.size();i++){
+			if(u_List.get(i).RRIP<7){
+				int x = u_List.get(i).RRIP;
+				u_List.get(i).set_RRIP(x);;
+		
+			}
+	
+		}
+	}
+	//OPTgen predictor: iterates through a sequence of access array that contains liveness interval between block accesses
+	boolean OPTpredictor(String block){
+		//miss = false;
+		//hit = true
+		boolean OPTp=false;
+
+		if (blk.size()!=0){
+			blk.add(0,block);
+			counter.add(0, 0);
+		}
+		else{
+			//find previous appearences of block
+			for(int i=0 ; i<blk.size(); i++){
+				//get previous 
+				if(blk.get(i)==block){
+					for (int j=i;j< blk.size();j++){
+						//miss: just appends block to the arrays (no increment of anything)
+						if (counter.get(j)>obj_cache.cache_cap){
+								OPTp = false;
+								blk.add(i, block);
+								counter.add(i, 0);
+						}
+						//hit: increase counters substring's counter by 1
+						else{
+							for (int k=i;k<blk.size();k++){
+								counter.set(k, counter.get(k)+1);
+								OPTp = true;
+								blk.add(i, block);
+								counter.add(i, 0);
+							}
+
+						}
+					}
+					for (int j =i; j<blk.size();j++){
+						counter.set(j, counter.get(j)+1);
+						
+					}
+				}
+				else {
+					blk.add(i, block);
+					counter.add(i, 0);
+				}
+
+			}
+		}
+
+
+		return OPTp;
+	}
+
+	//Hawkeye predictor: predicts weather the block is cache friendly or cache averse
+	boolean hpredictor(String block,List<Block_Cache>u_List){
+		//boolean variable for prediction 
+		// false = cache friendly
+		// 1 = cache averse
+		boolean hp;
+			if(OPTpredictor(block)){
+				hp = true;
+			}
+			else 
+				hp = false;
+				if(!OPTpredictor(block))
+					age_all_lines(u_List);
+		return hp;
+	}
+
+
 	int temporal_diff(int init, int sample) {
 		if (sample > init) {
 			int diff = sample - init;
@@ -265,6 +356,8 @@ public class CacheInsert {
 				return;
 			}
 		}
+
+
 		row_Idx = getting_idx_L1(wL1_bits);
 		write_Miss_L1++;
 		//if empty cache, include data also lru counter value to be decreased
@@ -555,6 +648,24 @@ public class CacheInsert {
 				}
 				break;
 			}
+			//Hawkeye
+			case 4:{
+				for (int i = 0; i< u_list.size(); i++){
+					int max=0;
+					//if there are any cache averse blocks(==7), set them as target
+					if (u_list.get(i).RRIP == 7){
+						uCL1_idx= i;
+					}
+					//if no cache averse blocks, set highest RRIP as target
+					else if (u_list.get(i).RRIP > max){
+							max = u_list.get(i).RRIP;
+							uCL1_idx = i;
+					}
+	
+				}
+	
+				break;
+			}
 			/*
 			 * Custom LRU + Random Replacement Case
 			 * When LRU Misses Exceed a Threshold, we resort to Random Replacement
@@ -689,6 +800,20 @@ public class CacheInsert {
 				// for LRU this means proceed as normal
 			}
 		}
+		
+		//Hawkeye
+		else if(obj_cache.replacementPolicy ==4){
+						//remove all instances (detrianing sampler)
+						for (int i =0; i< blk.size();i++){
+							if (blk.contains(u_list.get(uCL1_idx).block_cache_data)){
+								blk.remove(i);
+								counter.remove(i);
+							}
+						}
+						//change block from cache
+						Block_Cache newCache = u_list.get(uCL1_idx);
+						u_list.set(uCL1_idx, newCache);
+		}
 	}
 
 	int getting_eviction_idx_opt(List<Block_Cache> gvopt_li) {
@@ -760,6 +885,24 @@ public class CacheInsert {
 				if (cb.block_Cache_AccessCounter_OPT() < val)
 					cb.set_block_Cache_AccessCounter_OPT(cb.block_Cache_AccessCounter_OPT() + 1);
 			}
+		}
+
+		//Hawkeye
+		else if (obj_cache.replacementPolicy == 4){
+			for (int i = 0; i< UCL2_list.size(); i++){
+				int max=0;
+				//if there are any cache averse blocks(==7), set them as target
+				if (UCL2_list.get(i).RRIP == 7){
+					idx= i;
+				}
+				//if no cache averse blocks, set highest RRIP as target
+				else if (UCL2_list.get(i).RRIP > max){
+						max = UCL2_list.get(i).RRIP;
+						idx = i;
+				}
+
+			}
+
 		}
 		/*
 		* Custom LRU + Random Replacement Case
@@ -853,7 +996,7 @@ public class CacheInsert {
 			evict_L1(got_evict);
 		}
 
-    // if using SHiP
+    	// if using SHiP
 		if (obj_cache.replacementPolicy == 3) {
 			// Initialize SHCT[evicted.signature_m] if you haven't already
 			if (!SHCT.containsKey(got_evict.signature_m)) {
@@ -887,7 +1030,22 @@ public class CacheInsert {
 			else {
 				// predict intermediate re-reference
 				// for LRU this means proceed as normal
+
 			}
+		}
+
+		//Hawkeye
+		else if (obj_cache.replacementPolicy == 4){
+			//remove all instances (detrianing sampler)
+			for (int i =0; i< blk.size();i++){
+				if (blk.contains(UCL2_list.get(idx).block_cache_data)){
+					blk.remove(i);
+					counter.remove(i);
+				}
+			}
+			//change block from cache
+			Block_Cache newCache = UCL2_list.get(idx);
+			UCL2_list.set(idx, newCache);
 		}
 
 		
@@ -930,6 +1088,8 @@ public class CacheInsert {
 			return "optimal";
 		case 3:
 			return "SHiP";
+		case 4:
+			return "Hawkeye";
 				
 		default:
 			return "Invalid replacement Policy";

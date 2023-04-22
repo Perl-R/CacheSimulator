@@ -8,13 +8,17 @@ public class Cache {
 			replacementPolicy,inclusionProperty, blockSize, size_L1, Assoc_L1,
 			size_L2, Assoc_L2;
 	String trace_File;
+	int cache_cap;
+	List<Integer> Access_sequence;
 	
 	int logOfTwo(int y) {
 		int a = (int) ((Math.log(y)) / (Math.log(2)));
 		return a;
 	}
 
-	//structuring the Cache Memory
+
+
+	//structuring the Cache Memory 
 	Cache(int cons_idx_L1, int cons_set_L1, int cons_idx_L2, int cons_set_L2, int cons_blockSize, int cons_replacementPolicy, int cons_inclusionProperty, int cons_size_L1, int cons_size_L2, int cons_Assoc_L1, int cons_Assoc_L2, String cons_traceFile)
 	{
 		this.inclusionProperty = cons_inclusionProperty;
@@ -25,6 +29,7 @@ public class Cache {
 		newL1 = new ArrayList<>();
 		newL2 = new ArrayList<>();
 		List<Block_Cache> newtemp;
+		cache_cap = blockSize*100;
 
 		int i=0;
 		while(i<cons_idx_L1){
