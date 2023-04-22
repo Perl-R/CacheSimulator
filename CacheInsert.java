@@ -736,7 +736,6 @@ public class CacheInsert {
 
 	//L2 replacement policy
 	void u_Cache_L2(String UCL2_data, String UCL2_tag, List<Block_Cache> UCL2_list, boolean UCL2_read) {
-		System.out.println("here");
 		int idx = 0;
 		// FIFO
 		if (obj_cache.replacementPolicy == 1)
@@ -864,6 +863,8 @@ public class CacheInsert {
 			if (!got_evict.get_outcome()) {
 				// decrement SHCT[signature_m]
 				SHCT.put(got_evict.signature_m, SHCT.get(got_evict.signature_m) - 1);
+				if (SHCT.get(got_evict.signature_m) < 0)
+					SHCT.put(got_evict.signature_m, 0);
 			}
 			Block_Cache newCache = UCL2_list.get(idx);
 			
