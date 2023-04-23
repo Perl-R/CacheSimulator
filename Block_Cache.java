@@ -17,6 +17,9 @@ class Block_Cache {
 	static int fifo_counter = 0; // Each time we add a new item, this static counter will increment (to maintain order)
 	int fifo_position; // This is the position counter of the current block
 
+	//Hawkeye
+	int RRIP;
+
 	public Block_Cache(String cons_block_cache_data, String cons_block_cache_tag, int cons_block_Cache_AccessCounter_LRU, boolean cons_block_cache_dirtyBit) {
 		super();
 		this.block_cache_data = cons_block_cache_data;
@@ -46,6 +49,9 @@ class Block_Cache {
 	}
 	public int get_eta() {
 		return eta;
+	}
+	void set_RRIP(int x){
+		this.RRIP=x;
 	}
 	public void set_eta(int etaValue) {
 		this.eta = etaValue;
