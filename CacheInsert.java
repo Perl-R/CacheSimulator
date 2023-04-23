@@ -223,7 +223,7 @@ public class CacheInsert {
 		//hit = true
 		boolean OPTp=false;
 
-		if (blk.size()!=0){
+		if (blk.size()==0){
 			blk.add(0,block);
 			counter.add(0, 0);
 		}
@@ -805,7 +805,7 @@ public class CacheInsert {
 		else if(obj_cache.replacementPolicy ==4){
 						//remove all instances (detrianing sampler)
 						for (int i =0; i< blk.size();i++){
-							if (blk.contains(u_list.get(uCL1_idx).block_cache_data)){
+							if (blk.get(i) == u_list.get(uCL1_idx).block_cache_data)){
 								blk.remove(i);
 								counter.remove(i);
 							}
