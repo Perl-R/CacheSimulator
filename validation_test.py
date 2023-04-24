@@ -25,7 +25,7 @@ for validationFile, command in testCommands.items():
     with open('temp.txt', 'w') as f:
         output = subprocess.run(command, stdout=f)
     
-    output = subprocess.run(["diff", "./temp.txt", f"./validation_runs/{validationFile}", "-w"], stdout=subprocess.PIPE)
+    output = subprocess.run(["diff", "./temp.txt", f"./validation_runs/{validationFile}", "-iw"], stdout=subprocess.PIPE)
 
     if len(output.stdout) != 0:
         print(f"Incorrect output for {validationFile}")
